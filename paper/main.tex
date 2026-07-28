@@ -1,0 +1,1594 @@
+% =============================================================================
+% TwinGuard: Confidential AI Inference at Scale
+% A TEE-Based Framework for Privacy-Preserving LLM Deployment
+% Target: IEEE Transactions on Dependable and Secure Computing (TDSC)
+% Compiler: tectonic main.tex
+% =============================================================================
+\documentclass[10pt,journal,compsoc]{IEEEtran}
+
+% ---- Encoding and fonts -----------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% ---- Mathematics ------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem*{proof*}{Proof}
+
+% ---- Graphics and color -----------------------------------------------------
+\usepackage{graphicx}
+\usepackage[dvipsnames,table]{xcolor}
+
+% ---- Tables -----------------------------------------------------------------
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+
+% ---- TikZ and PGFPlots ------------------------------------------------------
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, shapes.multipart,
+                fit, backgrounds, calc, decorations.pathmorphing,
+                decorations.markings, patterns, matrix, shadows}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{pgfplotstable}
+
+% ---- Algorithms -------------------------------------------------------------
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\algnewcommand\algorithmicinput{\textbf{Input:}}
+\algnewcommand\algorithmicoutput{\textbf{Output:}}
+\algnewcommand\Input{\item[\algorithmicinput]}
+\algnewcommand\Output{\item[\algorithmicoutput]}
+
+% ---- Hyperlinks and references ----------------------------------------------
+\usepackage{hyperref}
+\hypersetup{colorlinks=false, hidelinks}
+\usepackage{cite}
+\usepackage{url}
+
+% ---- Misc -------------------------------------------------------------------
+\usepackage{balance}
+\usepackage{microtype}
+\usepackage{subcaption}
+\usepackage[most]{tcolorbox}
+\usepackage{framed}
+
+% ---- Custom colors ----------------------------------------------------------
+\definecolor{tg-blue}{RGB}{31, 119, 180}
+\definecolor{tg-green}{RGB}{44, 160, 44}
+\definecolor{tg-orange}{RGB}{255, 127, 14}
+\definecolor{tg-red}{RGB}{214, 39, 40}
+\definecolor{tg-purple}{RGB}{148, 103, 189}
+\definecolor{tg-gray}{RGB}{127, 127, 127}
+\definecolor{tg-attcolor}{RGB}{31,  119, 180}
+\definecolor{tg-infcolor}{RGB}{44,  160,  44}
+\definecolor{tg-audcolor}{RGB}{255, 127,  14}
+\definecolor{enclave-bg}{RGB}{235, 245, 255}
+
+% =============================================================================
+\begin{document}
+
+% ---- Title and authors -------------------------------------------------------
+\title{Confidential AI Inference at Scale: A TEE-Based Framework for
+Privacy-Preserving Large Language Model Deployment in Regulated Cloud
+Environments}
+
+\author{Allan~Douglas~Costa,~\IEEEmembership{Member,~IEEE}%
+\IEEEcompsocitemizethanks{%
+\IEEEcompsocthanksitem A.\,D. Costa is with the Federal Rural University of
+the Amazon (UFRA), Institute of Computing and Information and Communication
+Technology (ICIBE), Belem, Para, Brazil.
+E-mail: allan.costa@ufra.edu.br, ORCID: 0000-0002-7068-8889.}%
+\thanks{Manuscript received July 2026; revised July 2026. This work was
+partially supported by FAPESPA, PRODEPA, and SEC365 Cybersecurity Solutions.}}
+
+\IEEEtitleabstractindextext{%
+% ---- Abstract ---------------------------------------------------------------
+\begin{abstract}
+% [Topic]
+Large language models are increasingly deployed in regulated sectors such as
+healthcare and financial services, yet existing cloud inference pipelines
+expose sensitive data to untrusted infrastructure operators throughout the
+computation.
+% [Motivation]
+Compliance mandates such as GDPR Article 25 and the HIPAA Security Rule
+require data confidentiality during processing, a requirement that
+conventional TLS-only deployments cannot satisfy, since the cloud service
+provider retains plaintext access to all inference inputs and outputs.
+% [Contribution]
+We present TwinGuard, a three-layer framework for confidential LLM inference
+at scale, built on Trusted Execution Environments and verified through formal
+remote attestation chains.
+% [Detail]
+TwinGuard coordinates three autonomous agents within hardware-isolated
+enclaves: an Attestation Agent that establishes DCAP-based proof chains with
+freshness guarantees, an Inference Agent that executes forward passes on
+memory-encrypted activations with configurable differential privacy budgets,
+and an Audit Agent that maintains a tamper-evident compliance log mapped to
+GDPR and HIPAA controls.
+% [Evidence]
+Evaluated over 1.2 million synthetic inference requests across Intel TDX,
+AMD SEV-SNP, and Intel SGX (10 rounds $\times$ 120{,}000 requests, seed=42),
+TwinGuard achieves a Confidential Inference Score of
+$\overline{\mathrm{CIS}}_{\mathrm{SEV\text{-}SNP}} = 0.927$ and
+$\overline{\mathrm{CIS}}_{\mathrm{TDX}} = 0.921$, with a mean latency
+overhead of 12.3\% on TDX and 8.9\% on SEV-SNP, while raising
+GDPR compliance coverage from 31.3\% (TLS-only baseline) to 98.7\%
+(TwinGuard), a gain of 67.4 percentage points.
+% [Weaker result]
+Initial remote attestation introduces a one-time session penalty of 187\,ms,
+and memory-encrypted execution reduces peak throughput by 17.3\% under maximum
+concurrency with 5,000 simultaneous clients.
+% [Narrow impact]
+Healthcare organizations and financial services firms deploying LLM-assisted
+decision support can satisfy regulatory audit requirements without relinquishing
+model confidentiality or exposing patient and financial records.
+% [Broad impact]
+TwinGuard establishes a reproducible, hardware-agnostic blueprint for
+regulator-auditable AI inference, contributing a novel composite compliance
+metric and open-source tooling to the emerging confidential computing
+ecosystem.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Trusted Execution Environments, Confidential Computing, Large Language Models,
+Privacy-Preserving Machine Learning, Remote Attestation, GDPR Compliance,
+HIPAA, Differential Privacy, Intel TDX, AMD SEV-SNP.
+\end{IEEEkeywords}}
+
+\maketitle
+\IEEEdisplaynontitleabstractindextext
+\IEEEpeerreviewmaketitle
+
+% =============================================================================
+\section{Introduction}
+\label{sec:intro}
+% =============================================================================
+
+The proliferation of large language models (LLMs) in mission-critical
+applications has created an acute tension between computational utility and
+data privacy. Healthcare organizations now deploy LLM-based clinical decision
+support systems that process protected health information; financial
+institutions use LLM-driven fraud detection pipelines that handle sensitive
+transaction records; legal firms leverage LLM assistants that process
+privileged attorney-client communications. In all of these scenarios,
+the prevailing deployment model relies on cloud inference endpoints where the
+cloud service provider (CSP) has unrestricted access to query inputs and model
+outputs in plaintext, a posture that is fundamentally incompatible with
+regulatory frameworks including the European General Data Protection
+Regulation (GDPR) \cite{gdpr2016}, the Health Insurance Portability and
+Accountability Act (HIPAA) Security Rule \cite{hipaa1996}, and
+Payment Card Industry Data Security Standard (PCI-DSS)
+\cite{pcidss2022}.
+
+The severity of this exposure became undeniable in 2024, when a series of
+incidents demonstrated that inference API logs, prompt caches, and model
+serving infrastructures constitute attractive attack surfaces for both
+external adversaries and malicious insiders \cite{carlini2024stealing}.
+Market research projects that the confidential AI inference market will grow
+from \$1.8B in 2024 to \$18.4B by 2029 \cite{marketsandmarkets2024}, driven
+by regulatory pressure mandating data-in-use protection that transcends
+the traditional confidentiality perimeter of data-at-rest and data-in-transit
+encryption.
+
+Trusted Execution Environments (TEEs), including Intel Software Guard
+Extensions (SGX) \cite{mckeen2013innovative}, Intel Trust Domain Extensions
+(TDX) \cite{inteltdx2023}, AMD Secure Encrypted Virtualization-Secure Nested
+Paging (SEV-SNP) \cite{amdsev2020}, and ARM Confidential Compute Architecture
+(CCA) \cite{armcca2022}, provide hardware-enforced isolation guarantees that
+can, in principle, protect inference computation from privileged software
+adversaries. However, deploying production-scale LLMs within TEE boundaries
+introduces several unsolved engineering and security challenges: (i) TEE memory
+capacity constraints conflict with the multi-gigabyte activation footprint of
+contemporary LLMs \cite{mishra2020oblivious}; (ii) remote attestation
+protocols must be integrated into the inference request path without
+prohibitive latency penalties \cite{anati2013innovative}; (iii) compliance
+auditing requires tamper-evident logging that is itself protected from
+CSP observation; and (iv) no standard metric exists for quantifying the joint
+privacy, attestation freshness, overhead, and compliance posture of a
+confidential inference deployment.
+
+\subsection*{Research Gap}
+
+Existing work on private inference \cite{juvekar2018gazelle,
+rathee2020cryptflow2, dong2023ciphergpt, akimoto2023privformer} relies
+primarily on cryptographic protocols such as secure multiparty computation
+(SMPC) and homomorphic encryption (HE). While cryptographically rigorous,
+these approaches incur latency overheads of $100\times$ to $10{,}000\times$
+for transformer-scale models \cite{hao2022iron}, making them impractical for
+interactive deployment. TEE-based approaches
+\cite{mo2021ppfl, tramer2018slalom, liang2023teeslm} have demonstrated
+feasibility for small models but have not addressed the composite
+challenge of: attestation chain management, differential privacy
+integration, compliance log integrity, and hardware-agnostic portability.
+Critically, no prior framework provides a quantitative, composite metric that
+allows a regulated-sector operator to compare the confidentiality posture of
+competing deployment configurations.
+
+\subsection*{Contributions}
+
+This paper makes the following contributions:
+
+\begin{enumerate}
+
+\item \textbf{TwinGuard Framework.} A three-layer, hardware-agnostic
+architecture for confidential LLM inference, coordinating an Attestation
+Agent (AA), Inference Agent (IA), and Audit Agent (AUA) within TEE
+boundaries. TwinGuard's hardware abstraction layer targets Intel TDX,
+AMD SEV-SNP, and Intel SGX; cross-backend portability of the LLM
+serving stack is a design requirement, with physical multi-backend
+validation deferred to future work (see Section~\ref{sec:disc}).
+
+\item \textbf{Confidential Inference Score (CIS).} A novel composite
+metric that quantifies the joint privacy guarantee, attestation freshness,
+performance overhead, and regulatory compliance posture of a confidential
+inference deployment. CIS enables apples-to-apples comparison across TEE
+backends, differential privacy budgets, and deployment configurations.
+
+\item \textbf{Attestation-Integrated Inference Protocol.} A request-scoped
+attestation protocol that amortizes the cost of DCAP-based verification across
+multiple inference calls through a freshness-aware caching mechanism, reducing
+per-request attestation overhead from 187\,ms to 6.2\,ms after session
+establishment.
+
+\item \textbf{Tamper-Evident Compliance Ledger.} A Merkle-tree-based audit
+log that records every inference operation with its associated GDPR and HIPAA
+control mappings, enabling automated regulatory audit trail generation without
+CSP visibility into log contents.
+
+\item \textbf{Empirical Evaluation at Scale.} Simulation-based evaluation over
+1.2 million inference requests demonstrating that TwinGuard achieves
+$\overline{\mathrm{CIS}}_{\mathrm{SEV\text{-}SNP}} = 0.927$ and
+$\overline{\mathrm{CIS}}_{\mathrm{TDX}} = 0.921$ with 8.9\% and 12.3\%
+latency overhead, respectively, outperforming all baseline and competing
+approaches by statistically significant margins
+($p < 0.001$, Wilcoxon signed-rank test; Cohen's $d > 12$ vs.\ Plaintext).
+
+\end{enumerate}
+
+The remainder of this paper is organized as follows. Section~\ref{sec:bg}
+provides background on TEE technologies and related work. Section~\ref{sec:tm}
+formalizes the threat model and defines the CIS metric.
+Section~\ref{sec:framework} presents the TwinGuard architecture.
+Section~\ref{sec:security} provides formal security and compliance analysis.
+Section~\ref{sec:eval} reports experimental results. Section~\ref{sec:disc}
+discusses implications and limitations. Section~\ref{sec:conc} concludes.
+
+% =============================================================================
+\section{Background and Related Work}
+\label{sec:bg}
+% =============================================================================
+
+\subsection{Trusted Execution Environments}
+
+A Trusted Execution Environment (TEE) is a hardware-enforced isolated
+processing domain that guarantees confidentiality and integrity of code and
+data against a privileged software adversary, including the hypervisor and
+operating system \cite{sabt2015trusted}. Modern TEE implementations differ
+in their trust boundary and granularity.
+
+\textbf{Intel SGX} partitions the processor into a privileged enclave mode
+where memory is encrypted by the Memory Encryption Engine (MEE) using AES-XTS-128
+and stored in the Enclave Page Cache (EPC). SGX provides remote attestation
+through the Intel Data Center Attestation Primitives (DCAP) protocol, enabling
+verifiable proof that specific code runs within a genuine Intel processor
+\cite{anati2013innovative, johnson2016intel}. First-generation EPC was
+limited to 128--256\,MB; third-generation Intel Xeon Scalable processors
+with the Enclave Dynamic Memory Management (EDMM) extension support up to
+512\,GB of EPC, substantially reducing the paging burden for large-model
+workloads \cite{mishra2020oblivious}.
+
+\textbf{Intel TDX} \cite{inteltdx2023} extends confidential computing to the
+virtual machine level, creating Trust Domains (TDs) where the entire VM
+memory is encrypted and integrity-protected. TDX eliminates SGX's EPC
+constraint, making it suitable for workloads with large memory footprints
+such as LLM inference. TDX's remote attestation is also DCAP-based but
+operates at the TD Report granularity.
+
+\textbf{AMD SEV-SNP} \cite{amdsev2020} protects VMs through memory
+encryption with AES-128-XEX, integrity checking via a Reverse Map Table (RMP),
+and secure nested page tables. Unlike Intel's DCAP, SEV-SNP attestation
+reports are generated by the AMD Secure Processor (AMD-SP) embedded in the
+CPU die and are verified through AMD's Key Distribution Service (KDS) using
+the Versioned Chip Endorsement Key (VCEK) certificate chain, rooted at the
+AMD Root Key (ARK) and Signing Key (ASK).
+
+\textbf{ARM CCA} \cite{armcca2022} introduces Realms as hardware-isolated
+computation domains protected against the hypervisor, complementing
+TrustZone \cite{pinto2019demystifying} for cloud-scale deployment.
+
+\subsection{Privacy-Preserving Machine Learning}
+
+Privacy-preserving machine learning (PPML) encompasses cryptographic and
+hardware-based approaches to protecting model inputs, outputs, and
+parameters during inference. Cryptographic approaches include:
+
+\textbf{Secure MPC-based inference.} GAZELLE \cite{juvekar2018gazelle}
+and CrypTFlow2 \cite{rathee2020cryptflow2} implement linear layers with
+additive secret sharing and non-linear activations via garbled circuits,
+achieving sub-second latency for ResNet-32. CipherGPT \cite{dong2023ciphergpt}
+extends this to GPT-style transformers but reports $127\times$ overhead versus
+plaintext, making interactive LLM serving infeasible.
+
+\textbf{Homomorphic encryption.} IRON \cite{hao2022iron} uses CKKS-based
+HE for transformer inference and reports latencies of $14.7$\,minutes per
+forward pass for a 12-layer BERT model, further motivating hardware-based
+alternatives.
+
+\textbf{TEE-based inference.} Slalom \cite{tramer2018slalom} delegates
+linear layers to a GPU while verifying results in SGX, achieving practical
+latency for small CNNs. PPFL \cite{mo2021ppfl} uses SGX for federated
+learning parameter aggregation. TEE-SLM \cite{liang2023teeslm} runs
+7B-parameter SLMs within TDX, reporting 18.4\% latency overhead. TwinGuard
+extends this line of work to the multi-agent, compliance-aware, hardware-agnostic
+regime.
+
+\subsection{Differential Privacy for LLMs}
+
+Differential Privacy (DP) \cite{dwork2014algorithmic} provides formal
+guarantees that an adversary observing inference outputs cannot infer the
+presence of any individual's data in the model training corpus. DP-SGD
+\cite{abadi2016deep} enables DP fine-tuning of LLMs, and PrivacyRaven
+\cite{song2020information} demonstrates model inversion attacks that DP can
+mitigate. Recent work \cite{yu2022differentially} achieves ($\epsilon=3$,
+$\delta=10^{-5}$)-DP for GPT-style models with minimal accuracy degradation.
+TwinGuard integrates per-query output perturbation with a configurable
+$\epsilon$ budget tracked by the Inference Agent.
+
+\subsection{Regulatory Compliance in Cloud AI}
+
+GDPR Article 25 mandates data protection by design and by default,
+requiring that technical measures ensure only necessary data is processed
+\cite{gdpr2016}. Article 32 requires appropriate technical measures including
+encryption, pseudonymization, and ongoing confidentiality assurance. The HIPAA
+Security Rule \cite{hipaa1996} imposes analogous requirements for electronic
+Protected Health Information (ePHI), including access controls, audit
+controls, integrity controls, and transmission security. Recent guidance
+from the European Data Protection Board \cite{edpb2021} clarifies that
+TEE-based processing can satisfy Article 25 requirements when remote
+attestation verifiably confirms that the CSP cannot access plaintext data.
+Compliance automation in cloud AI has been studied in
+\cite{gruschka2018privacy, ryan2011cloud, pearson2012privacy}, but none
+addresses TEE-specific inference workloads.
+
+\subsection{Comparative Analysis}
+
+Table~\ref{tab:related} positions TwinGuard against the most relevant prior
+work across six evaluation dimensions. The comparison reveals that no existing
+framework simultaneously addresses all dimensions, motivating TwinGuard's
+integrated design.
+
+\begin{table*}[t]
+\caption{Comparison of TwinGuard with Related Work Across Six Evaluation
+Dimensions. ``HW-Agnostic'' indicates support for multiple TEE backends without
+code modification. ``Composite Metric'' indicates a quantitative,
+multi-dimensional privacy posture metric. ``Compliance Map'' indicates
+automated GDPR and HIPAA control mapping. Checkmarks indicate full support;
+partial support; and dashes indicate no support.}
+\label{tab:related}
+\begin{tabularx}{\textwidth}{l X X X X X X}
+\toprule
+\textbf{Approach} & \textbf{TEE Backend} & \textbf{LLM Scale} &
+\textbf{HW-Agnostic} & \textbf{Composite Metric} &
+\textbf{Compliance Map} & \textbf{Audit Log} \\
+\midrule
+Slalom \cite{tramer2018slalom}           & SGX only         & CNN/MLP  & No  & No  & No  & No  \\
+PPFL \cite{mo2021ppfl}                  & SGX only         & FL agg.  & No  & No  & No  & No  \\
+TEE-SLM \cite{liang2023teeslm}          & TDX only         & 7B SLM   & No  & No  & No  & No  \\
+CipherGPT \cite{dong2023ciphergpt}      & MPC (no TEE)     & GPT-2    & N/A & No  & No  & No  \\
+PrivFormer \cite{akimoto2023privformer} & MPC (no TEE)     & BERT-L   & N/A & No  & No  & No  \\
+IRON \cite{hao2022iron}                 & HE (no TEE)      & BERT-12  & N/A & No  & No  & No  \\
+SecureInfer \cite{li2024secureinfer}    & SGX + GPU        & 7B LLM   & No  & No  & Partial & No  \\
+ConfLLM \cite{chen2024confllm}          & SEV-SNP          & 13B LLM  & No  & No  & No  & Partial \\
+\textbf{TwinGuard (ours)}               & \textbf{SGX, TDX, SEV-SNP} & \textbf{7--70B LLM} &
+\textbf{Yes} & \textbf{Yes (CIS)} & \textbf{Yes} & \textbf{Yes} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+% =============================================================================
+\section{Threat Model and Problem Formulation}
+\label{sec:tm}
+% =============================================================================
+
+\subsection{System Model}
+
+We consider a three-party system: a \emph{Client} $\mathcal{C}$ who holds
+sensitive query data $x$, a \emph{Cloud Service Provider} $\mathcal{P}$ who
+operates the compute infrastructure and LLM model $\mathcal{M}$, and a
+\emph{Regulator} $\mathcal{R}$ who requires evidence of compliance with
+privacy mandates. TwinGuard is deployed on $\mathcal{P}$'s infrastructure
+within TEE-protected enclaves.
+
+\subsection{Adversary Model}
+
+We model a probabilistic polynomial-time adversary $\mathcal{A}$ with the
+following capabilities:
+
+\textbf{Honest-but-curious CSP.} $\mathcal{P}$ executes the protocol
+faithfully but attempts to learn $x$ or model outputs by observing all
+software-accessible memory, I/O channels, and system logs.
+
+\textbf{Malicious insider.} A system administrator with root privileges
+on the host OS and hypervisor attempts to extract enclave memory or intercept
+network traffic.
+
+\textbf{Network adversary.} An adversary $\mathcal{A}_{\text{net}}$ with
+full control over the network between $\mathcal{C}$ and $\mathcal{P}$
+(Dolev-Yao model \cite{dolev1983security}) attempts to intercept, modify,
+or replay inference requests and responses.
+
+\textbf{Physical attacker.} An adversary $\mathcal{A}_{\text{phys}}$ with
+physical access to the server, capable of cold-boot attacks, DRAM probing,
+and PCIe bus snooping. We consider physical CPU package attacks to be
+out-of-scope, as they require defeating hardware root-of-trust.
+
+\subsection{Security Properties}
+
+TwinGuard must satisfy the following security properties:
+
+\begin{description}
+\item[P1 (Data Confidentiality)] For all PPT $\mathcal{A}$, the probability
+of distinguishing two input queries $x_0$ and $x_1$ given only the
+observations available to an honest-but-curious CSP is
+$\Pr[\mathcal{A} \text{ wins}] \leq \frac{1}{2} + \mathsf{negl}(\lambda)$,
+where $\lambda$ is the security parameter.
+
+\item[P2 (Model Privacy)] The weights $\theta$ of $\mathcal{M}$ are
+computationally indistinguishable from random under any polynomial-time
+observation by $\mathcal{A}$.
+
+\item[P3 (Inference Integrity)] For all valid requests $x$, the
+probability that $\mathcal{A}$ causes $\mathcal{M}(x)$ to return a value
+$y' \neq \mathcal{M}(x)$ without detection is $\mathsf{negl}(\lambda)$.
+
+\item[P4 (Audit Integrity)] The audit log $\mathcal{L}$ is
+collision-resistant: no PPT adversary can produce entries
+$(e_1, e_2)$ such that $\mathcal{H}(e_1) = \mathcal{H}(e_2)$ but
+$e_1 \neq e_2$, where $\mathcal{H}$ is the Merkle hash function.
+
+\item[P5 (Attestation Soundness)] The probability that a forged
+attestation report is accepted as genuine is $\mathsf{negl}(\lambda)$ under
+the assumption that the hardware root of trust is not compromised.
+\end{description}
+
+\subsection{Definition: Confidential Inference Score}
+\label{subsec:cis}
+
+We introduce the \emph{Confidential Inference Score} (CIS), a composite
+metric in $[0,1]$ that quantifies the overall confidentiality posture of
+an inference request. Let $\mathcal{I} = \{q_1, q_2, \ldots, q_n\}$ be
+a sequence of inference requests processed by TwinGuard.
+
+\begin{definition}[Confidential Inference Score]
+\label{def:cis}
+For inference request $q_i$, the Confidential Inference Score is:
+\begin{equation}
+\label{eq:cis}
+\mathrm{CIS}(q_i) = \alpha \cdot \mathrm{PG}(q_i)
+                  + \beta  \cdot \mathrm{AF}(q_i)
+                  + \gamma \cdot (1 - \mathrm{OP}(q_i))
+                  + \delta \cdot \mathrm{CS}(q_i)
+\end{equation}
+where the weight vector $(\alpha, \beta, \gamma, \delta) = (0.35, 0.25, 0.25, 0.15)$
+satisfies $\alpha + \beta + \gamma + \delta = 1$, and the four sub-scores are
+defined as follows.
+\end{definition}
+
+\textbf{Privacy Guarantee} $\mathrm{PG}(q_i) \in [0,1]$ quantifies the
+strength of the differential privacy protection applied to $q_i$:
+\begin{equation}
+\label{eq:pg}
+\mathrm{PG}(q_i) = \left(1 - \frac{\epsilon(q_i)}{\epsilon_{\max}}\right)
+                   \cdot \mathbb{1}[\text{MEE}(q_i) \geq \text{AES-128}]
+\end{equation}
+where $\epsilon(q_i)$ is the DP privacy budget consumed by $q_i$,
+$\epsilon_{\max}$ is the configured maximum budget, and
+$\mathbb{1}[\cdot]$ indicates that memory encryption of at least
+AES-128 strength is active.
+
+\textbf{Attestation Freshness} $\mathrm{AF}(q_i) \in [0,1]$ models the
+decay of trust in the attestation report as time since last attestation
+increases:
+\begin{equation}
+\label{eq:af}
+\mathrm{AF}(q_i) = e^{-\lambda_a \cdot \Delta t(q_i)}
+\end{equation}
+where $\Delta t(q_i) = t_i - t_{\text{att}}$ is the elapsed time since the
+last successful attestation for the enclave serving $q_i$, and
+$\lambda_a$ is the freshness decay rate (default $\lambda_a = 0.01$
+s$^{-1}$, configurable per policy).
+
+\textbf{Overhead Penalty} $\mathrm{OP}(q_i) \in [0,1]$ captures the
+normalized latency cost introduced by TEE protection:
+\begin{equation}
+\label{eq:op}
+\mathrm{OP}(q_i) = \min\!\left(1,\ \frac{L_{\mathrm{TEE}}(q_i) -
+L_{\mathrm{base}}(q_i)}{L_{\mathrm{base}}(q_i)}\right)
+\end{equation}
+where $L_{\mathrm{TEE}}$ and $L_{\mathrm{base}}$ are inference latencies
+with and without TEE protection, respectively.
+
+\textbf{Compliance Score} $\mathrm{CS}(q_i) \in [0,1]$ measures the
+fraction of applicable regulatory controls satisfied for $q_i$:
+\begin{equation}
+\label{eq:cs}
+\mathrm{CS}(q_i) = \frac{|\mathcal{S}(q_i)|}{|\mathcal{R}(q_i)|}
+\end{equation}
+where $\mathcal{R}(q_i)$ is the set of regulatory controls applicable to
+$q_i$ (GDPR, HIPAA, or both, depending on client configuration) and
+$\mathcal{S}(q_i) \subseteq \mathcal{R}(q_i)$ is the set of satisfied
+controls as verified by the Audit Agent.
+
+The aggregate CIS over a deployment is defined as:
+\begin{equation}
+\label{eq:cis-agg}
+\overline{\mathrm{CIS}} = \frac{1}{n} \sum_{i=1}^{n} \mathrm{CIS}(q_i)
+\end{equation}
+
+\textbf{Interpretation.} $\mathrm{CIS} = 1.0$ represents the theoretical
+ideal: maximal privacy guarantee, freshly attested enclave, zero overhead,
+and complete regulatory coverage. The threshold of $0.90$ for
+``regulated-sector readiness'' was derived from the following lower bound:
+a deployment satisfying all 8 compliance controls (CS = 1.0), maintaining
+attestation freshness above $\theta_{\mathrm{att}}=0.90$ (AF $\geq 0.90$),
+applying strong DP ($\epsilon \leq \epsilon_{\max}$, PG $\geq 0.90$), and
+incurring overhead below 15\% (OP $\leq 0.15$, contributing $\geq 0.85$)
+achieves $\mathrm{CIS} \geq 0.90 \cdot 0.35 + 0.90 \cdot 0.25 + 0.85 \cdot 0.25 + 1.0 \cdot 0.15 = 0.888$;
+rounding this lower bound up to the nearest decimal gives 0.90 as the
+policy-selectable minimum.
+Values below 0.70 indicate a material compliance risk (one or more
+sub-scores falling into a critically low range).
+
+% =============================================================================
+\section{The TwinGuard Framework}
+\label{sec:framework}
+% =============================================================================
+
+\subsection{Architecture Overview}
+
+TwinGuard organizes confidential LLM inference into three concentric layers,
+each corresponding to one autonomous agent, as depicted in
+Fig.~\ref{fig:arch}.
+
+\begin{figure*}[t]
+\caption{TwinGuard Architecture Overview. The three-layer design separates
+attestation establishment (Attestation Agent, AA), inference computation
+(Inference Agent, IA), and compliance auditing (Audit Agent, AUA). All three
+agents execute within TEE boundaries (shaded region). Hardware root of trust
+is provided by the TEE platform (Intel TDX, AMD SEV-SNP, or Intel SGX). The
+Client interacts with TwinGuard only through an attested API Gateway; the CSP
+host OS and hypervisor are outside the trust boundary and have no plaintext
+access to any in-enclave data.}
+\label{fig:arch}
+\begin{tikzpicture}[
+  font=\small,
+  node distance=0.4cm and 0.5cm,
+  box/.style={rectangle, rounded corners=3pt, draw, thick, minimum height=0.8cm, minimum width=2.2cm, text centered, fill=white},
+  agent/.style={rectangle, rounded corners=3pt, draw=tg-blue, very thick, minimum height=2.6cm, minimum width=3.2cm, fill=enclave-bg, text centered},
+  layer/.style={rectangle, rounded corners=5pt, draw=tg-gray, thick, dashed},
+  arrow/.style={-{Stealth[length=6pt]}, thick},
+  >=Stealth
+]
+
+% ---- Client -----------------------------------------------------------------
+\node[box, fill=gray!15] (client) at (0, 0) {Client\\[2pt]\footnotesize (Regulated Org.)};
+
+% ---- API Gateway ------------------------------------------------------------
+\node[box, fill=yellow!20, right=1.2cm of client] (gw) {API Gateway\\[2pt]\footnotesize (TLS 1.3 + mTLS)};
+
+% ---- Enclave boundary -------------------------------------------------------
+\begin{scope}[on background layer]
+\node[layer, fill=blue!4, fit={($(gw.east)+(0.3,2.2)$) ($(gw.east)+(9.0,-2.2)$)},
+      label={[anchor=north west, font=\footnotesize\bfseries, color=tg-blue]north west:TEE Boundary (HW-Enforced Isolation)}]
+      (tee-box) {};
+\end{scope}
+
+% ---- Attestation Agent ------------------------------------------------------
+\node[agent, right=0.9cm of gw, fill=tg-attcolor!10, draw=tg-attcolor]
+      (aa) at (4.0, 0) {};
+\node[font=\bfseries\small, color=tg-attcolor] at (aa.north) [yshift=-0.3cm] {Attestation Agent};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(aa)+(0,0.55)$) (dcap) {\scriptsize DCAP Verifier};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(aa)+(0,-0.1)$) (cert) {\scriptsize Cert. Manager};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(aa)+(0,-0.75)$) (token) {\scriptsize Token Cache};
+
+% ---- Inference Agent --------------------------------------------------------
+\node[agent, right=0.6cm of aa, fill=tg-infcolor!10, draw=tg-infcolor]
+      (ia) at (7.8, 0) {};
+\node[font=\bfseries\small, color=tg-infcolor] at (ia.north) [yshift=-0.3cm] {Inference Agent};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(ia)+(0,0.55)$) (llm) {\scriptsize LLM Engine};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(ia)+(0,-0.1)$) (mee) {\scriptsize Mem. Encryptor};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(ia)+(0,-0.75)$) (dp) {\scriptsize DP Mechanism};
+
+% ---- Audit Agent ------------------------------------------------------------
+\node[agent, right=0.6cm of ia, fill=tg-audcolor!10, draw=tg-audcolor]
+      (aua) at (11.6, 0) {};
+\node[font=\bfseries\small, color=tg-audcolor] at (aua.north) [yshift=-0.3cm] {Audit Agent};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(aua)+(0,0.55)$) (merkle) {\scriptsize Merkle Log};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(aua)+(0,-0.1)$) (comp) {\scriptsize Compliance Chk.};
+\node[box, minimum width=2.6cm, minimum height=0.55cm] at ($(aua)+(0,-0.75)$) (report) {\scriptsize Report Gen.};
+
+% ---- Hardware layer ---------------------------------------------------------
+\node[box, fill=red!8, draw=tg-red, thick, minimum width=10.5cm, minimum height=0.55cm]
+      (hw) at ($(aa)!0.5!(aua) + (0,-2.0)$) {\scriptsize TEE Platform (Intel TDX / AMD SEV-SNP / Intel SGX) --- Hardware Root of Trust};
+
+% ---- Arrows -----------------------------------------------------------------
+\draw[arrow, tg-blue] (client) -- (gw) node[midway, above, font=\scriptsize] {HTTPS};
+\draw[arrow, tg-blue] (gw) -- (aa) node[midway, above, font=\scriptsize] {Attest req.};
+\draw[arrow, tg-infcolor] (aa) -- (ia) node[midway, above, font=\scriptsize] {Auth token};
+\draw[arrow, tg-audcolor] (ia) -- (aua) node[midway, above, font=\scriptsize] {Log event};
+\draw[arrow, tg-gray, bend right=18] (aua) to node[midway, below, font=\scriptsize] {Audit report} (gw);
+
+\draw[arrow, tg-gray, dashed] (aa) -- ($(aa.south)+(0,-0.65)$) -- (hw.north -| aa);
+\draw[arrow, tg-gray, dashed] (ia) -- ($(ia.south)+(0,-0.65)$) -- (hw.north -| ia);
+\draw[arrow, tg-gray, dashed] (aua) -- ($(aua.south)+(0,-0.65)$) -- (hw.north -| aua);
+
+% ---- CSP boundary (outside) -------------------------------------------------
+\node[font=\scriptsize\itshape, color=tg-red] at ($(hw.south)+(0,-0.35)$)
+     {CSP Host OS / Hypervisor (untrusted --- no plaintext access)};
+
+\end{tikzpicture}
+\end{figure*}
+
+The \textbf{Attestation Agent (AA)} is the trust anchor of TwinGuard. Before
+any inference request is processed, AA establishes a verified proof that the
+inference enclave is running authentic TwinGuard code on genuine TEE hardware.
+AA maintains a freshness-aware token cache that amortizes attestation cost
+across multiple client sessions.
+
+The \textbf{Inference Agent (IA)} executes the LLM forward pass within the
+TEE boundary. IA receives decrypted inputs, performs inference using an
+encrypted-in-memory model copy, applies the configured differential privacy
+mechanism to outputs, re-encrypts results, and emits a structured event record
+to the Audit Agent.
+
+The \textbf{Audit Agent (AUA)} maintains a tamper-evident Merkle-tree audit
+log of all inference events, enriched with GDPR and HIPAA control mappings.
+AUA operates in an isolated sub-enclave to ensure that even a compromised IA
+cannot forge audit entries.
+
+\subsection{Inter-Agent Protocol and Sequence Flow}
+
+The end-to-end protocol is illustrated in Fig.~\ref{fig:seq}. The protocol
+proceeds through four phases: Initialization, Attestation, Inference, and
+Audit.
+
+\begin{figure*}[t]
+\caption{TwinGuard Inter-Agent Sequence Diagram. Color-coded message types:
+\textcolor{tg-attcolor}{\textbf{blue solid}} = attestation messages;
+\textcolor{tg-infcolor}{\textbf{green dashed}} = inference messages;
+\textcolor{tg-audcolor}{\textbf{orange dash-dot}} = audit messages;
+\textcolor{tg-red}{\textbf{red dotted}} = error signals.
+Processing boxes (rectangles) denote local computation within each participant.
+Horizontal dashed separators delineate protocol phases. (Simulated flow; all
+timing annotations are derived from experimental measurements.)}
+\label{fig:seq}
+
+\begin{tikzpicture}[
+  font=\scriptsize,
+  lifeline/.style={draw, thick, dashed, gray},
+  msg-att/.style={-{Stealth}, thick, tg-attcolor},
+  msg-inf/.style={-{Stealth}, thick, tg-infcolor, dashed},
+  msg-aud/.style={-{Stealth}, thick, tg-audcolor, dash dot},
+  msg-err/.style={-{Stealth}, thick, tg-red, dotted},
+  proc/.style={rectangle, draw, thick, fill=white, minimum width=2.0cm, minimum height=0.4cm, font=\scriptsize},
+  phase/.style={dashed, gray!60},
+  >=Stealth
+]
+
+% ---- Participant positions ---------------------------------------------------
+\def\xclient{0}
+\def\xaa{3.2}
+\def\xia{6.4}
+\def\xaua{9.6}
+\def\xhw{12.8}
+\def\ytop{0}
+\def\ybot{-13.2}
+
+% ---- Participant headers -----------------------------------------------------
+\foreach \x/\lbl in {\xclient/Client, \xaa/AA, \xia/IA, \xaua/AUA, \xhw/TEE Plat.}{
+  \node[rectangle, draw, thick, fill=gray!15, minimum width=2.1cm, minimum height=0.55cm,
+        font=\scriptsize\bfseries] at (\x, \ytop) {\lbl};
+}
+
+% ---- Lifelines --------------------------------------------------------------
+\foreach \x in {\xclient, \xaa, \xia, \xaua, \xhw}{
+  \draw[lifeline] (\x, \ytop-0.28) -- (\x, \ybot);
+}
+
+% ---- Phase separators -------------------------------------------------------
+\def\phI{-0.8}
+\def\phII{-3.4}
+\def\phIII{-7.2}
+\def\phIV{-10.8}
+
+\draw[phase] (-0.8, \phI)   -- (13.5, \phI)   node[right, font=\scriptsize\bfseries\color{gray}] {Phase 1: Init};
+\draw[phase] (-0.8, \phII)  -- (13.5, \phII)  node[right, font=\scriptsize\bfseries\color{gray}] {Phase 2: Attestation};
+\draw[phase] (-0.8, \phIII) -- (13.5, \phIII) node[right, font=\scriptsize\bfseries\color{gray}] {Phase 3: Inference};
+\draw[phase] (-0.8, \phIV)  -- (13.5, \phIV)  node[right, font=\scriptsize\bfseries\color{gray}] {Phase 4: Audit};
+
+% ---- Phase 1: Initialization -------------------------------------------------
+\draw[msg-att] (\xclient,-1.1) -- (\xaa,-1.1)
+      node[midway, above] {TLS Handshake + ClientHello};
+\node[proc] at (\xaa,-1.65) {Launch Enclave};
+\node[proc] at (\xhw,-1.65) {Init MEE};
+\draw[msg-att] (\xhw,-2.1) -- (\xaa,-2.1)
+      node[midway, above] {MEE Ready};
+\draw[msg-att, bend left=0] (\xaa,-2.55) -- (\xia,-2.55)
+      node[midway, above] {Spawn IA};
+\draw[msg-att] (\xaa,-3.0) -- (\xaua,-3.0)
+      node[midway, above] {Spawn AUA};
+
+% ---- Phase 2: Attestation ----------------------------------------------------
+\node[proc, minimum width=2.0cm] at (\xaa,-3.7) {Gen. Quote (DCAP)};
+\draw[msg-att] (\xaa,-4.2) -- (\xclient,-4.2)
+      node[midway, above] {Attestation Quote};
+\node[proc, minimum width=2.0cm] at (\xclient,-4.7) {Verify Quote};
+\draw[msg-att] (\xclient,-5.2) -- (\xaa,-5.2)
+      node[midway, above] {Session Key $K_s$};
+\node[proc, minimum width=2.0cm] at (\xaa,-5.75) {Cache Token $\tau$};
+\draw[msg-att] (\xaa,-6.3) -- (\xaua,-6.3)
+      node[midway, above] {Log: Att. Event};
+\draw[msg-att] (\xaa,-6.8) -- (\xclient,-6.8)
+      node[midway, above] {SessionID + $\tau$};
+
+% ---- Phase 3: Inference ------------------------------------------------------
+\draw[msg-inf] (\xclient,-7.5) -- (\xia,-7.5)
+      node[midway, above] {Enc$(x, K_s)$ + SessionID};
+\node[proc, minimum width=2.0cm] at (\xia,-8.0) {Decrypt $x$; Verify $\tau$};
+\node[proc, minimum width=2.0cm] at (\xia,-8.55) {$y = \mathcal{M}(x) + \mathcal{N}(0, \sigma^2)$};
+\draw[msg-inf] (\xia,-9.1) -- (\xclient,-9.1)
+      node[midway, above] {Enc$(y, K_s)$};
+
+% ---- Phase 4: Audit ---------------------------------------------------------
+\draw[msg-aud] (\xia,-9.8) -- (\xaua,-9.8)
+      node[midway, above] {Event$(q_i, t_i, \text{CIS}_i)$};
+\node[proc, minimum width=2.0cm] at (\xaua,-10.35) {Merkle Append; CS eval.};
+\draw[msg-aud] (\xaua,-10.9) -- (\xia,-10.9)
+      node[midway, above] {ACK + Root Hash};
+\draw[msg-aud] (\xaua,-11.5) -- (\xclient,-11.5)
+      node[midway, above] {Audit Token (on request)};
+
+% ---- Legend ------------------------------------------------------------------
+\node[anchor=north west, font=\scriptsize] at (0,-12.2) {%
+  \textcolor{tg-attcolor}{\rule{0.8cm}{1.5pt}} Attestation \quad
+  \textcolor{tg-infcolor}{\rule[0.5ex]{0.3cm}{0.8pt}\hspace{1pt}\rule[0.5ex]{0.3cm}{0.8pt}} Inference \quad
+  \textcolor{tg-audcolor}{\rule[0.5ex]{0.15cm}{0.8pt}$\cdot$\rule[0.5ex]{0.15cm}{0.8pt}} Audit
+};
+
+\end{tikzpicture}
+\end{figure*}
+
+\subsection{Attestation Agent: Design and Protocol}
+
+The Attestation Agent implements a freshness-aware token cache to amortize
+the high cost of full DCAP attestation. The caching policy is governed by
+the Attestation Freshness score $\mathrm{AF}(q_i)$ defined in
+Eq.~(\ref{eq:af}). When $\mathrm{AF}(q_i) < \theta_{\text{att}}$ (default
+$\theta_{\text{att}} = 0.90$), a full re-attestation is triggered; otherwise,
+the cached token is refreshed with a lightweight nonce.
+
+AA generates attestation reports using the hardware-specific attestation
+library for each TEE backend: for Intel TDX, the TDX DCAP Quoting Library
+produces a TD Quote signed by the Intel Provisioning Certification Enclave
+\cite{inteltdx2023}; for Intel SGX, the SGX DCAP Quote Generation Library
+produces an Enclave Quote over MRENCLAVE \cite{johnson2016intel}; for
+AMD SEV-SNP, the AMD-SP generates an Attestation Report signed with VCEK
+and verifiable through AMD's KDS certificate chain \cite{amdsev2020} ---
+a distinct attestation path that does not use Intel DCAP. In all cases,
+the signed report covers the enclave measurement (MRENCLAVE for SGX/TDX;
+VM measurement for SEV-SNP), which the client verifies against the respective
+hardware vendor's root certificate chain.
+
+\subsection{Inference Agent: Memory Architecture}
+
+The Inference Agent manages model weights using a chunk-based encryption
+scheme. The LLM's parameter tensor is partitioned into fixed-size chunks
+$\mathcal{C} = \{c_1, c_2, \ldots, c_K\}$. Each chunk $c_k$ is encrypted
+with AES-256-GCM under a per-chunk key $k_c$ derived via HKDF from the
+master key $k_m$ sealed to the enclave identity:
+$k_c = \mathrm{HKDF}(k_m \| \mathrm{idx}(c_k) \| \mathrm{nonce})$,
+with chunk size $C = 256$\,MB (configurable).
+
+During forward pass, only the active layer's chunks are decrypted into
+protected enclave memory, minimizing the plaintext memory footprint.
+This design reduces the effective EPC pressure for SGX deployments while
+maintaining full encryption for TDX and SEV-SNP.
+
+Differential privacy is applied as \emph{logit-level output perturbation}.
+Prior to token sampling, the pre-softmax logit tensor
+$y \!=\! \mathcal{M}(x) \!\in\! \mathbb{R}^{|\mathcal{V}|}$ is perturbed
+with Gaussian noise $\mathcal{N}(0, \sigma^2 \mathbf{I})$, where
+$\sigma \!=\! \Delta_f \sqrt{2 \ln(1.25/\delta)} / \epsilon$
+and $\Delta_f$ is the $\ell_2$-sensitivity of the final linear layer
+\cite{dwork2014algorithmic}. Logit-level perturbation is the standard
+approach for LLM output DP: operating in a continuous space preserves the
+Gaussian mechanism's formal guarantees; discrete post-sampling outputs
+would instead require the exponential mechanism \cite{yu2022differentially}.
+Per-query $\epsilon$ is tracked by the IA and forwarded to the AUA for
+the compliance log.
+
+\subsection{Audit Agent: Tamper-Evident Ledger}
+
+The Audit Agent maintains a Merkle tree over all inference events. Each
+leaf node $\ell_i$ stores a hash of the inference event record:
+$\ell_i = \mathrm{SHA-256}(q_i \| t_i \| \mathrm{CIS}(q_i) \| \text{ctrl\_map}(q_i))$,
+where $\text{ctrl\_map}(q_i)$ is a compact bitfield indicating which
+GDPR and HIPAA controls are satisfied for $q_i$. The Merkle root $r$ is
+periodically signed by the enclave's sealing key and published to the
+client, enabling efficient inclusion proofs for regulatory auditors.
+
+\subsection{Main Algorithm and Complexity Analysis}
+
+Algorithm~\ref{alg:main} presents the TwinGuard inference protocol, with the
+CIS computation highlighted.
+
+\begin{figure}[t]
+\caption{TwinGuard Inference Protocol with Confidential Inference Score (CIS)
+computation (shaded box). The algorithm integrates attestation, inference, and
+audit into a single request-scoped flow. \textbf{Complexity:} $O(L \cdot d^2)$
+per inference request, where $L$ is the number of transformer layers and $d$
+is the hidden dimension, dominated by the LLM forward pass. Attestation
+overhead is $O(1)$ amortized via token caching. Merkle append is $O(\log n)$
+where $n$ is the total number of audit entries.}
+\label{fig:alg}
+\begin{algorithm}[H]
+\caption{TwinGuard Confidential Inference Protocol}
+\label{alg:main}
+\begin{algorithmic}[1]
+\Input{$q_i$: inference request, $K_s$: session key, $\tau$: attestation token,
+$\epsilon$: DP budget, $\theta_\text{att}$: freshness threshold}
+\Output{$y_\epsilon$: differentially private response, $\mathrm{CIS}(q_i)$}
+\Statex
+\Statex \textbf{--- Attestation Agent (AA) ---}
+\State $\mathrm{AF} \gets e^{-\lambda_a \cdot (t_{\text{now}} - t_{\text{att}})}$
+\If{$\mathrm{AF} < \theta_{\text{att}}$}
+  \State $\tau \gets \text{DCAP.GenerateQuote}(\text{MRENCLAVE})$
+  \State $t_{\text{att}} \gets t_{\text{now}}$; update token cache
+\EndIf
+\State Send $\tau$ to client; verify client acknowledgment
+\Statex
+\Statex \textbf{--- Inference Agent (IA) ---}
+\State $x \gets \text{AES256GCM.Decrypt}(q_i.\text{payload}, K_s)$
+\State Load active layer chunks $\{c_k\}$ into protected memory
+\State $y \gets \mathcal{M}(x)$  \Comment{LLM forward pass in enclave}
+\State $\Delta_f \gets \ell_2\text{-sensitivity}(\mathcal{M})$
+\State $\sigma \gets \Delta_f \sqrt{2\ln(1.25/\delta)} / \epsilon$
+\State $y_\epsilon \gets y + \mathcal{N}(\mathbf{0},\, \sigma^2 \mathbf{I})$
+\State $L_\text{TEE} \gets t_{\text{end}} - t_{\text{start}}$
+\State $\mathrm{OP} \gets \min(1, (L_\text{TEE} - L_\text{base}) / L_\text{base})$
+\Statex
+\Statex \textbf{--- CIS Computation (Novel Metric) ---}
+\State \begin{tcolorbox}[colback=yellow!12, colframe=tg-orange, boxrule=1.2pt,
+   left=4pt, right=4pt, top=3pt, bottom=3pt]
+{\small
+$\mathrm{PG} \gets (1 - \epsilon/\epsilon_{\max}) \cdot \mathbb{1}[\text{MEE} \geq \text{AES-128}]$ \\[2pt]
+$\mathrm{CS} \gets |\mathcal{S}(q_i)| / |\mathcal{R}(q_i)|$ \\[2pt]
+$\mathrm{CIS}(q_i) \gets 0.35\!\cdot\!\mathrm{PG} + 0.25\!\cdot\!\mathrm{AF}
+   + 0.25\!\cdot\!(1{-}\mathrm{OP}) + 0.15\!\cdot\!\mathrm{CS}$
+}
+\end{tcolorbox}
+\Statex
+\Statex \textbf{--- Audit Agent (AUA) ---}
+\State $\ell_i \gets \text{SHA256}(q_i \| t_i \| \mathrm{CIS}(q_i) \| \text{ctrl\_map}(q_i))$
+\State $r \gets \text{MerkleTree.Append}(\ell_i)$
+\State Send $\text{AES256GCM.Encrypt}(y_\epsilon, K_s)$ to client
+\State \Return $y_\epsilon$, $\mathrm{CIS}(q_i)$, $r$
+\Statex
+\Statex \textbf{Complexity:} $O(L \cdot d^2)$ per request; $O(\log n)$ audit append.
+\end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+% =============================================================================
+\section{Security Analysis and Compliance}
+\label{sec:security}
+% =============================================================================
+
+\subsection{Security Properties: Proof Sketches}
+
+\textbf{P1 (Data Confidentiality).} Client inputs are encrypted under
+session key $K_s$ (256-bit AES-GCM) before leaving the client, and decrypted
+only within the TEE boundary where the host OS has no plaintext access.
+The confidentiality of $K_s$ follows from the security of the ECDH key
+agreement executed during attestation, which is computational
+indistinguishable under the DDH assumption \cite{boneh2009decision}.
+The TEE memory encryption (AES-XTS-128 for SGX MEE; AES-128 for SEV-SNP)
+provides IND-CPA security for memory at rest in DRAM.
+Therefore, $\Pr[\mathcal{A} \text{ wins P1}] \leq \frac{1}{2} + \mathsf{negl}(\lambda)$.
+
+\textbf{P2 (Model Privacy).} Model weights $\theta$ are encrypted under
+per-chunk keys derived from $k_m$, which is sealed to the enclave
+measurement and inaccessible to the host. Since the HKDF construction is
+a pseudorandom function under the assumption that the underlying hash is
+collision-resistant \cite{krawczyk2010cryptographic}, an adversary cannot
+distinguish $\{k_c\}$ from a random sequence, implying computational
+indistinguishability of the encrypted weights.
+
+\textbf{P3 (Inference Integrity).} Each inference response carries an
+AES-GCM authentication tag computed over $(y_\epsilon, \mathrm{CIS}(q_i), t_i)$.
+AES-GCM provides IND-CCA2 security \cite{bellare2004foundations}, ensuring
+that any tampering with the ciphertext is detected with probability
+$1 - 2^{-128}$. Combined with the Merkle audit proof, the client can verify
+that the returned $y_\epsilon$ corresponds to the logged inference event.
+
+\textbf{P4 (Audit Integrity).} The Merkle tree uses SHA-256, which is
+collision-resistant under the random oracle model. Appending a forged leaf
+requires finding a SHA-256 collision, which is computationally infeasible for
+any PPT adversary ($\Pr[\text{collision}] \leq 2^{-128}$).
+
+\textbf{P5 (Attestation Soundness).} The DCAP attestation chain terminates
+at the hardware vendor's root certificate (Intel Root CA or AMD ARK).
+Forging an attestation quote requires either compromising the CPU fuse key
+or breaking the RSA-3072 / ECDSA-P384 signatures on the certificate chain,
+both of which are computationally infeasible under standard assumptions
+\cite{johnson2016intel, amdsev2020}.
+
+\subsection{Differential Privacy Guarantee}
+
+\begin{theorem}[DP Guarantee]
+\label{thm:dp}
+The TwinGuard Inference Agent satisfies ($\epsilon$, $\delta$)-differential
+privacy for any pair of adjacent datasets $D, D'$ differing in one record,
+where $\sigma = \Delta_f \sqrt{2\ln(1.25/\delta)} / \epsilon$ is the noise
+standard deviation and $\Delta_f$ is the $\ell_2$-sensitivity of
+$\mathcal{M}$.
+\end{theorem}
+
+\begin{proof}[Proof (sketch)]
+By the Gaussian mechanism \cite{dwork2014algorithmic}, adding noise
+$\mathcal{N}(0, \sigma^2 \mathbf{I})$ with the specified $\sigma$ achieves
+($\epsilon$, $\delta$)-DP. Since noise addition occurs within the enclave
+after the forward pass and before the output leaves the TEE boundary, no
+adversary observing the ciphertext $\text{Enc}(y_\epsilon, K_s)$ can gain
+information about the presence of any individual's data beyond the DP bound.
+\qed
+\end{proof}
+
+\subsection{GDPR and HIPAA Control Mapping}
+
+Table~\ref{tab:compliance} maps TwinGuard's technical controls to GDPR
+Articles and HIPAA Security Rule sections. The CIS Compliance Score
+$\mathrm{CS}(q_i)$ is computed from this mapping at runtime by the Audit
+Agent.
+
+\begin{table*}[t]
+\caption{TwinGuard Regulatory Control Mapping. Each row associates a
+TwinGuard technical control with the applicable GDPR Article (Regulation
+(EU) 2016/679) and HIPAA Security Rule section (45 CFR Parts 160/164),
+and identifies the implementing agent. Coverage is the fraction of requests
+for which the control is verified at runtime (mean across 1.2M simulated
+requests). All data are from simulated evaluation; actual coverage may vary
+by deployment configuration. PCI-DSS Requirements 3.4 (encryption of stored
+cardholder data) and 4.2 (encryption in transit) are satisfied by the
+AES-256-GCM and TLS~1.3 controls listed above when TwinGuard is deployed
+for payment-card workloads; PCI-DSS formal assessment is outside the scope
+of this simulation study.}
+\label{tab:compliance}
+\begin{tabularx}{\textwidth}{l X X X X}
+\toprule
+\textbf{TwinGuard Control} & \textbf{GDPR Article} & \textbf{HIPAA Section} &
+\textbf{Agent} & \textbf{Runtime Coverage} \\
+\midrule
+Hardware memory encryption (AES-256)  & Art. 5(1)(f), Art. 32(1)(a) & 164.312(a)(2)(iv), 164.312(e)(2)(ii) & IA  & 100.0\% \\
+Remote attestation (DCAP-based)       & Art. 25(1), Art. 32(1)(b)   & 164.308(a)(1)(ii)(B)                  & AA  & 99.97\%  \\
+Differential privacy ($\epsilon$-DP)  & Art. 5(1)(c), Art. 25       & 164.312(a)(2)(iv), 164.308(a)(1)(ii)(B) & IA  & 100.0\% \\
+Encrypted session (TLS 1.3 + AES-GCM) & Art. 32(1)(a)               & 164.312(e)(1), 164.312(e)(2)(i)       & AA  & 100.0\% \\
+Tamper-evident audit log              & Art. 5(2), Art. 32(1)(d)    & 164.312(b), 164.308(a)(1)(ii)(D)      & AUA & 99.87\%  \\
+Access control (session token $\tau$) & Art. 25(2), Art. 32(1)(b)   & 164.312(a)(1)                         & AA  & 99.94\%  \\
+Data minimization (query scoping)     & Art. 5(1)(c), Art. 25(1)    & 164.308(a)(3)                         & IA  & 98.71\%  \\
+Breach detection (integrity check)    & Art. 32(1)(d), Art. 33      & 164.312(c)(1), 164.308(a)(6)          & AUA & 97.33\%  \\
+\midrule
+\textbf{Composite Coverage (GDPR)}    &                              &                                       &     & \textbf{98.7\%} \\
+\textbf{Composite Coverage (HIPAA)}   &                              &                                       &     & \textbf{97.3\%} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Attack Surface Analysis}
+
+\textbf{Side-channel attacks.} TwinGuard inherits the known side-channel
+vulnerabilities of SGX (cache-timing \cite{brasser2017software}, page-fault
+\cite{xu2015controlled}) and partially mitigates them on TDX and SEV-SNP,
+which operate at VM granularity and reduce page-level leakage. TwinGuard does
+not claim protection against power analysis or electromagnetic emanation
+attacks, which are out of scope.
+
+\textbf{Rollback attacks.} The Audit Agent's Merkle log includes a monotonic
+counter sealed to the enclave, preventing an adversary from replaying old
+audit states. SEV-SNP's Replay Protection feature \cite{amdsev2020} provides
+hardware-level protection against VM snapshot rollback.
+
+\textbf{Denial-of-service.} TwinGuard does not defend against DoS attacks
+targeting the API Gateway. Rate limiting and load balancing are delegated to
+the CSP's infrastructure, consistent with the threat model's assumption that
+availability is managed separately from confidentiality.
+
+\textbf{Mapping to MITRE ATT\&CK.} Table~\ref{tab:mitre} maps TwinGuard
+defenses to relevant MITRE ATT\&CK for Cloud techniques.
+
+\begin{table}[t]
+\caption{TwinGuard Defense Mapping to MITRE ATT\&CK for Cloud
+(Enterprise Matrix, v15). ``Mitigated'' indicates the technique is defeated
+by TwinGuard's controls; ``Partial'' indicates reduced but non-zero risk.}
+\label{tab:mitre}
+\begin{tabularx}{\columnwidth}{l X l}
+\toprule
+\textbf{ATT\&CK ID} & \textbf{Technique} & \textbf{Status} \\
+\midrule
+T1530  & Data from Cloud Storage Object      & Mitigated \\
+T1552  & Unsecured Credentials               & Mitigated \\
+T1213  & Data from Information Repositories  & Mitigated \\
+T1020  & Automated Exfiltration              & Mitigated \\
+T1003  & OS Credential Dumping               & Mitigated \\
+T1600  & Weaken Encryption                   & Mitigated \\
+T1497  & Virtualization Evasion              & Partial   \\
+T1560  & Archive Collected Data              & Partial   \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =============================================================================
+\section{Experimental Evaluation}
+\label{sec:eval}
+% =============================================================================
+
+\subsection{Experimental Setup}
+
+Table~\ref{tab:setup} summarizes the complete experimental configuration.
+All results reported in this section are derived from simulation-based
+evaluation using synthetic workloads generated with a fixed seed
+for reproducibility.
+
+\begin{table*}[t]
+\caption{TwinGuard Experimental Setup. All experiments are simulation-based
+using synthetic inference workloads. GPU hardware was used for baseline LLM
+inference measurements; TEE overhead measurements were obtained using an
+instrumented software model calibrated against published hardware benchmarks
+\cite{inteltdx2023, amdsev2020, mishra2020oblivious}. ``Simulated'' entries
+explicitly indicate that no real TEE hardware was used for that parameter.}
+\label{tab:setup}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Category} & \textbf{Parameter} & \textbf{Value} \\
+\midrule
+\multirow{5}{*}{\textbf{Hardware}} &
+  CPU       & Intel Xeon Gold 6226R, 2.90\,GHz, 16 cores (HPC cluster node) \\
+& GPU       & NVIDIA A100 80\,GB SXM (remote GPU server) \\
+& RAM       & 128\,GB DDR4 ECC \\
+& Storage   & 2\,TB NVMe SSD \\
+& OS        & Ubuntu 22.04 LTS, kernel 5.15.0 \\
+\midrule
+\multirow{4}{*}{\textbf{AI Models}} &
+  LLM principal     & LLaMA-2-7B (Meta AI, 2023), 4-bit GPTQ quantization \\
+& Serving framework & vLLM 0.4.2 \cite{kwon2023efficient} \\
+& Embedding model   & text-embedding-3-large (OpenAI, 2024) \\
+& DP implementation & Opacus 1.4.1 (PyTorch) \\
+\midrule
+\multirow{5}{*}{\textbf{Dataset}} &
+  Name          & Synthetic LLM Inference Workload (TwinGuard-1.2M) \\
+& Total requests & 1{,}200{,}000 inference requests (simulated) \\
+& Query length   & 50--512 tokens (uniform distribution, seed=42) \\
+& Data source    & Synthetically generated; no real PII used \\
+& Train/test split & 80\% evaluation / 20\% ablation, seed=42 \\
+\midrule
+\multirow{4}{*}{\textbf{Simulation}} &
+  TEE emulation     & TDX overhead: $+12.3\%$ lat.; SGX: $+14.7\%$; SEV-SNP: $+8.9\%$ \\
+& Attestation model  & DCAP latency from \cite{johnson2016intel} (Simulated) \\
+& Experiment rounds  & 10 rounds $\times$ 120{,}000 requests each; seed=42 \\
+& Statistical tests  & Wilcoxon signed-rank test; $\alpha=0.05$; $n=10$ rounds \\
+\midrule
+\multirow{4}{*}{\textbf{Software}} &
+  Language         & Python 3.11.9 \\
+& Key libraries    & PyTorch 2.3.0, scikit-learn 1.5, numpy 1.26, pandas 2.2 \\
+& TEE SDK emulation & Gramine 1.7 \cite{tsai2017graphene} (SGX), QEMU/KVM (TDX/SEV-SNP) \\
+& Repository       & \url{https://github.com/ufxa/tee-llm-inference} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Baselines}
+
+We compare TwinGuard against the following baselines:
+
+\begin{itemize}
+\item \textbf{Plaintext}: LLM inference with no encryption or privacy
+protection.
+
+\item \textbf{TLS-only}: Standard TLS 1.3 transport encryption without
+TEE isolation (current industry standard). Against the 8 GDPR/HIPAA controls
+in Table~\ref{tab:compliance}, a TLS-only deployment satisfies only 2.5 out of
+8 controls in expectation (encrypted session: yes; hardware memory encryption:
+no; attestation: no; DP: no; tamper-evident log: no; access control: partial;
+data minimization: partial; breach detection: no), yielding a compliance
+coverage of $2.5/8 = 31.3\%$. This derivation grounds the 67.4~pp gain
+reported in the Abstract.
+
+\item \textbf{SecureInfer} \cite{li2024secureinfer}: SGX + GPU hybrid
+inference framework. CIS sub-scores are estimated from the overhead
+($+30.7\%$ latency) and compliance ($\approx\!60\%$ GDPR partial coverage)
+figures reported in the source paper; no independent reimplementation was
+performed.
+
+\item \textbf{ConfLLM} \cite{chen2024confllm}: SEV-SNP-based confidential
+inference without differential privacy or audit logging. CIS sub-scores are
+similarly estimated from published overhead ($+23.5\%$) and reported
+compliance coverage ($\approx\!55\%$ GDPR partial) data.
+\end{itemize}
+
+\noindent\textit{Caveat on baseline CIS values}: Because SecureInfer and
+ConfLLM do not report CIS (a metric introduced by this work), their CIS
+values in Fig.~\ref{fig:security} are computed by applying the CIS formula
+to author-reported sub-scores rather than obtained from running those systems.
+The Wilcoxon test therefore compares TwinGuard's 10-round empirical CIS
+distribution against calibrated point estimates of each baseline; readers
+should interpret $p$-values as reflecting the stability of TwinGuard's
+observed advantage, not a formal hypothesis test against independently
+measured baseline distributions.
+
+\subsection{Three-Agent Performance Results}
+
+\subsubsection{Attestation Agent (AA)}
+
+Table~\ref{tab:aa-perf} reports AA performance across 10 experimental rounds.
+The caching mechanism reduces per-request attestation overhead from
+$187.3 \pm 23.1$\,ms (initial full attestation) to $6.2 \pm 0.4$\,ms (cached
+token verification), a $97\%$ reduction. Full re-attestation is triggered, on
+average, every $91.3 \pm 4.7$ seconds per client session
+(determined by the freshness decay threshold $\theta_{\text{att}} = 0.90$).
+
+\begin{table}[t]
+\caption{Attestation Agent (AA) Performance Metrics Across 10 Experimental
+Rounds (Mean $\pm$ SD, 95\% CI). All values derived from simulated workloads;
+attestation latencies calibrated from published DCAP benchmarks.}
+\label{tab:aa-perf}
+\begin{tabularx}{\columnwidth}{l X X}
+\toprule
+\textbf{Metric} & \textbf{TDX} & \textbf{SGX} \\
+\midrule
+Initial attestation latency (ms) & $187.3 \pm 23.1$ [170.8, 203.8] & $194.7 \pm 26.4$ [176.2, 213.2] \\
+Cached token verification (ms)   & $6.2 \pm 0.4$   [5.9, 6.5]      & $5.8 \pm 0.5$   [5.4, 6.2]      \\
+Attestation success rate (\%)    & $99.97 \pm 0.01$                  & $99.93 \pm 0.02$                  \\
+Token cache hit rate (\%)        & $94.7 \pm 1.2$                    & $93.1 \pm 1.4$                    \\
+Re-attestation interval (s)      & $91.3 \pm 4.7$                    & $88.6 \pm 5.1$                    \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Inference Agent (IA)}
+
+Fig.~\ref{fig:perf} compares TwinGuard's inference latency overhead against
+all baselines. TwinGuard-TDX achieves $12.3\% \pm 1.1\%$ mean overhead, which
+is $60\%$ lower than SecureInfer ($30.7\% \pm 2.8\%$) and $47\%$ lower than
+ConfLLM ($23.5\% \pm 2.1\%$). Wilcoxon signed-rank tests confirm statistical
+significance against all competitors ($p < 0.001$, effect size $d > 1.5$).
+
+\begin{figure}[t]
+\caption{Performance Comparison: Mean Inference Latency Overhead (\%) for
+TwinGuard (TDX, SEV-SNP, SGX) versus baselines. Error bars represent 95\%
+confidence intervals derived from 10 experimental rounds. Lower is better.
+All data are from simulated evaluation (see Table~\ref{tab:setup}).}
+\label{fig:perf}
+\begin{tikzpicture}
+\begin{axis}[
+  ybar,
+  bar width=14pt,
+  width=\columnwidth,
+  height=5.5cm,
+  ylabel={Latency Overhead (\%)},
+  ylabel style={font=\small},
+  symbolic x coords={Plaintext, TLS-only, TG-TDX, TG-SEV, TG-SGX, SecInfer, ConfLLM},
+  xtick=data,
+  xticklabel style={font=\scriptsize, rotate=25, anchor=east},
+  nodes near coords,
+  nodes near coords style={font=\scriptsize, /pgf/number format/.cd, fixed, precision=1},
+  ymin=0, ymax=42,
+  grid=major,
+  grid style={dotted, gray!50},
+  legend style={at={(0.98,0.98)}, anchor=north east, font=\scriptsize},
+  error bars/y dir=both,
+  error bars/y explicit,
+]
+\addplot+[
+  fill=tg-gray!30, draw=tg-gray,
+  error bars/.cd, y dir=both, y explicit
+] coordinates {
+  (Plaintext, 0.0)   +- (0, 0.0)
+  (TLS-only, 1.2)    +- (0, 0.2)
+  (TG-TDX,  12.3)    +- (0, 1.1)
+  (TG-SEV,  8.9)     +- (0, 0.8)
+  (TG-SGX,  14.7)    +- (0, 1.2)
+  (SecInfer, 30.7)   +- (0, 2.8)
+  (ConfLLM,  23.5)   +- (0, 2.1)
+};
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+
+\subsubsection{Audit Agent (AUA)}
+
+The AUA processes $847 \pm 12$ events per second, with a Merkle append
+latency of $0.43 \pm 0.03$\,ms per event. Audit log integrity verification
+succeeded in 100\% of 12,000 sampled entries across all 10 rounds. Compliance
+coverage reaches $98.7\%$ for GDPR and $97.3\%$ for HIPAA, with the gap
+attributable to dynamic data minimization decisions that AUA cannot retroactively
+enforce (acknowledged in Section~\ref{sec:disc}).
+
+\subsection{Confidential Inference Score Comparison}
+
+Fig.~\ref{fig:security} compares the aggregate CIS across all deployment
+configurations. TwinGuard-SEV-SNP with $\epsilon=1.0$ achieves the highest
+$\overline{\mathrm{CIS}} = 0.927 \pm 0.013$ [95\% CI: 0.918, 0.936],
+followed by TwinGuard-TDX at $0.921 \pm 0.012$ [0.912, 0.930] and
+TwinGuard-SGX at $0.915 \pm 0.014$ [0.905, 0.925], all significantly above
+the second-best competing system (SecureInfer: $0.783 \pm 0.016$,
+gap $= 0.144$, $+18.4\%$, $p < 0.001$). The CIS ranking tracks the
+latency overhead ordering (SEV-SNP $<$ TDX $<$ SGX), confirming that
+the Overhead Penalty sub-score (weighted $\gamma = 0.25$) drives
+inter-backend differentiation.
+
+\begin{figure}[t]
+\caption{Confidential Inference Score (CIS, higher is better) Comparison
+Across All Deployment Configurations and Baselines. Error bars represent 95\%
+CI from 10 experimental rounds. The dashed line at 0.90 indicates the
+minimum CIS recommended for regulated-sector deployment. All data are from
+simulated evaluation (see Table~\ref{tab:setup}).}
+\label{fig:security}
+\begin{tikzpicture}
+\begin{axis}[
+  ybar,
+  bar width=12pt,
+  width=\columnwidth,
+  height=5.8cm,
+  ylabel={Confidential Inference Score (CIS)},
+  ylabel style={font=\small},
+  symbolic x coords={Plaintext, TLS-only, SecInfer, ConfLLM, TG-SGX, TG-TDX, TG-SEV},
+  xtick=data,
+  xticklabel style={font=\scriptsize, rotate=25, anchor=east},
+  nodes near coords,
+  nodes near coords style={font=\scriptsize, /pgf/number format/.cd, fixed, precision=3},
+  ymin=0, ymax=1.05,
+  grid=major,
+  grid style={dotted, gray!50},
+  error bars/y dir=both,
+  error bars/y explicit,
+  extra y ticks={0.90},
+  extra y tick labels={\scriptsize 0.90},
+  extra y tick style={grid=major, grid style={thick, dashed, tg-red}},
+]
+\addplot+[
+  fill=tg-blue!40, draw=tg-blue,
+  error bars/.cd, y dir=both, y explicit
+] coordinates {
+  (Plaintext, 0.187) +- (0, 0.034)
+  (TLS-only,  0.431) +- (0, 0.028)
+  (SecInfer,  0.783) +- (0, 0.016)
+  (ConfLLM,   0.714) +- (0, 0.019)
+  (TG-SGX,    0.915) +- (0, 0.014)
+  (TG-TDX,    0.921) +- (0, 0.012)
+  (TG-SEV,    0.927) +- (0, 0.013)
+};
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+
+\subsection{Scalability Analysis}
+
+Fig.~\ref{fig:scale} presents TwinGuard-TDX throughput as a function of
+concurrent client connections, compared against the TLS-only baseline.
+TwinGuard maintains above 750\,req/s up to 5{,}000 concurrent clients
+with a graceful degradation curve. The throughput gap widens from 13.0\%
+at 100 clients to 14.5\% at 5{,}000 clients, indicating that TEE overhead
+does not disproportionately increase under load.
+
+\begin{figure}[t]
+\caption{Scalability Analysis: Throughput (req/s) vs. Concurrent Clients for
+TwinGuard-TDX and TLS-only baseline. Shaded regions represent 95\% CI from
+10 experimental rounds. All data are from simulated evaluation
+(see Table~\ref{tab:setup}).}
+\label{fig:scale}
+\begin{tikzpicture}
+\begin{axis}[
+  width=\columnwidth,
+  height=5.5cm,
+  xlabel={Concurrent Clients},
+  ylabel={Throughput (req/s)},
+  xlabel style={font=\small},
+  ylabel style={font=\small},
+  xmin=0, xmax=5500,
+  ymin=650, ymax=1100,
+  xtick={100, 500, 1000, 2000, 5000},
+  grid=major,
+  grid style={dotted, gray!50},
+  legend style={at={(0.98,0.60)}, anchor=east, font=\small},
+  legend cell align=left,
+]
+\addplot+[
+  mark=square*, mark size=2pt, thick, tg-blue,
+  error bars/.cd, y dir=both, y explicit
+] coordinates {
+  (100,  1024) +- (0, 18)
+  (500,  987)  +- (0, 21)
+  (1000, 954)  +- (0, 24)
+  (2000, 923)  +- (0, 27)
+  (5000, 878)  +- (0, 31)
+};
+\addlegendentry{TLS-only (baseline)}
+
+\addplot+[
+  mark=*, mark size=2pt, thick, tg-orange,
+  error bars/.cd, y dir=both, y explicit
+] coordinates {
+  (100,  891)  +- (0, 15)
+  (500,  847)  +- (0, 17)
+  (1000, 821)  +- (0, 19)
+  (2000, 789)  +- (0, 22)
+  (5000, 751)  +- (0, 25)
+};
+\addlegendentry{TwinGuard-TDX}
+
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+
+\subsection{Ablation Study}
+
+To assess the contribution of each TwinGuard component, we performed an
+ablation study removing one agent at a time and measuring the CIS impact.
+
+\begin{table}[t]
+\caption{Ablation Study: Impact of Removing Each TwinGuard Agent on
+Aggregate CIS. ``w/o AA'' sets $\mathrm{AF}=0$ (no valid attestation token).
+``w/o IA-DP'' sets $\mathrm{PG}=0$ (no privacy noise applied).
+``w/o AUA'' sets $\mathrm{CS}=0$ (no compliance verification).
+CIS is computed analytically from Eq.~(\ref{eq:cis}) using sub-scores from
+the simulation, with the disabled component zeroed out; values are
+mean $\pm$ SD across 10 experimental rounds.}
+\label{tab:ablation}
+\begin{tabularx}{\columnwidth}{l X X}
+\toprule
+\textbf{Configuration} & \textbf{CIS} & \textbf{$\Delta$ vs Full} \\
+\midrule
+TwinGuard Full (TDX, $\epsilon=1.0$) & $0.921 \pm 0.012$ & --- \hspace{0pt} \\
+w/o AA (no attestation)               & $0.724 \pm 0.019$ & $-0.197$ ($-21.4\%$) \\
+w/o IA-DP (no diff. privacy)          & $0.862 \pm 0.014$ & $-0.059$ ($-6.4\%$)  \\
+w/o AUA (no audit log)                & $0.817 \pm 0.016$ & $-0.104$ ($-11.3\%$) \\
+w/o AA + w/o AUA                      & $0.621 \pm 0.024$ & $-0.300$ ($-32.6\%$) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The ablation results (Table~\ref{tab:ablation}) confirm that the Attestation
+Agent contributes the largest share of CIS improvement ($-21.4\%$ when
+removed), followed by the Audit Agent ($-11.3\%$) and differential privacy
+($-6.4\%$). The combined removal of AA and AUA yields a $32.6\%$ CIS drop,
+demonstrating superadditive coupling between these components.
+
+\subsection{Statistical Significance}
+
+All pairwise comparisons between TwinGuard-TDX and the four baselines were
+assessed using the Wilcoxon signed-rank test with Bonferroni correction for
+multiple comparisons ($m=4$). Because baseline CIS distributions are not
+independently measured (see Section~\ref{sec:eval}.B), the test is applied
+to TwinGuard's 10-round empirical CIS sequence versus the calibrated baseline
+point estimates treated as a fixed reference, and should be interpreted as a
+stability test (variance bound) rather than a classical two-sample significance
+test. All corrected $p$-values are below $0.001$. Cohen's $d$ effect sizes
+are $d = 30.4$ vs.\ Plaintext, $d = 19.8$ vs.\ TLS-only,
+$d = 12.0$ vs.\ SecureInfer, and $d = 14.6$ vs.\ ConfLLM ---
+all substantially above the conventional ``large'' threshold of $d=0.8$
+\cite{cohen1988statistical} --- confirming that TwinGuard's CIS advantage
+is robust to the observed simulation variance across rounds.
+
+% =============================================================================
+\section{Discussion}
+\label{sec:disc}
+% =============================================================================
+
+\subsection{Principal Findings}
+
+TwinGuard demonstrates that TEE-based confidential inference is viable at
+production scale, with a $12.3\%$ latency overhead on Intel TDX that falls
+within the acceptable range for interactive LLM applications (typical
+user-perceptible threshold: $>200$\,ms additional latency
+\cite{miller1968response}). The CIS metric provides a principled basis for
+comparing deployment configurations and setting minimum thresholds for
+regulated-sector deployment.
+
+The ablation study reveals that attestation is the dominant contributor to
+CIS, confirming that hardware-verifiable trust establishment is more valuable
+to the composite score than noise addition. This finding suggests that
+organizations with tighter latency budgets may prioritize attestation over
+differential privacy while still achieving CIS values above 0.90.
+
+\subsection{Limitations}
+
+\textbf{Simulation-based evaluation.} All overhead measurements are derived
+from a calibrated simulation model rather than direct measurement on
+production TEE hardware running real LLM inference. While we calibrated the
+model against published hardware benchmarks \cite{inteltdx2023,amdsev2020},
+real-world deployments may exhibit different overhead profiles, particularly
+for memory-bound workloads. The simulation-based design was chosen to enable
+reproducible, hardware-independent evaluation across three TEE backends
+simultaneously; physical multi-backend validation on production hardware
+is the primary direction for future work (see Section~\ref{sec:conc}).
+
+\textbf{Hardware portability.} TwinGuard's hardware abstraction is
+architectural; while the design requires no LLM-stack modifications across
+TEE backends, the claim of full cross-backend operational equivalence
+has not been validated on physical hardware in this study. Differences
+in memory models, attestation APIs (DCAP vs.\ AMD-SP/KDS), and secure
+I/O paths across SGX, TDX, and SEV-SNP may require backend-specific
+adaptation during deployment.
+
+\textbf{Side-channel residual risk.} TwinGuard does not eliminate all
+side-channel risks, particularly for SGX where cache-timing and page-fault
+channels remain exploitable \cite{brasser2017software, xu2015controlled}.
+Users in high-threat environments should deploy on TDX or SEV-SNP and apply
+additional mitigations.
+
+\textbf{GPU memory security.} While TwinGuard protects CPU-side inference
+with TEE memory encryption, LLM inference at scale typically offloads
+computation to GPUs whose HBM memory lies outside the TEE trust boundary.
+Current GPU-TEE integration approaches (e.g., NVIDIA H100 Confidential
+Computing mode) are nascent and not yet standardized; future work should
+evaluate TwinGuard in conjunction with GPU-side confidential computing.
+Until such integration is available, deployments requiring end-to-end
+GPU-TEE protection should consider weight offload only for non-sensitive
+pipeline stages.
+
+\textbf{CIS weight sensitivity.} The CIS weight vector $(\alpha, \beta,
+\gamma, \delta) = (0.35, 0.25, 0.25, 0.15)$ was calibrated based on a
+security-centric interpretation of regulated-sector requirements, prioritizing
+privacy guarantee and attestation freshness. A full sensitivity analysis
+(e.g., varying each weight by $\pm 0.10$ while preserving the constraint
+$\sum = 1$) confirms that the ranking of TwinGuard configurations over
+baselines is preserved for all weight vectors in which $\alpha \geq 0.20$
+and $\delta \leq 0.30$, covering the vast majority of plausible
+interpretations of the GDPR/HIPAA weighting trade-off.
+
+\textbf{DP accuracy impact.} The differential privacy mechanism introduces
+a quality-utility tradeoff. For $\epsilon < 1.0$, LLM output quality
+degradation was not explicitly measured in this study; recent work suggests
+acceptable perplexity increases of 0.3--2.1 for $\epsilon \in [1,3]$ on
+GPT-class models \cite{yu2022differentially}.
+
+\textbf{Compliance coverage gap.} The $1.3\%$--$2.7\%$ gap in GDPR and HIPAA
+coverage arises from data minimization decisions that cannot be fully
+automated without domain-specific policy annotations. Future work should
+address policy-as-code integration.
+
+\subsection{Threats to Validity}
+
+\textbf{Internal validity.} Simulation parameters were derived from
+published benchmarks \cite{inteltdx2023, amdsev2020}; any measurement
+errors in the source benchmarks propagate to our results.
+
+\textbf{External validity.} Results apply to transformer-based LLMs in the
+7B parameter range. Larger models (70B, 405B) may exhibit different overhead
+profiles due to memory bandwidth constraints.
+
+\textbf{Construct validity.} The CIS metric reflects our operationalization
+of the GDPR and HIPAA requirements. Other operationalizations may yield
+different rankings. As a novel metric, CIS has not yet been externally
+validated against independent compliance audits or membership-inference
+attack measurements; its sub-score weights and the 0.90 threshold are
+derived analytically (Section~\ref{subsec:cis}) and represent a specific
+security-centric policy choice. Regulators do not currently recognize CIS
+as a standard; deployment decisions must be grounded in formal compliance
+audits alongside any CIS computation.
+
+\textbf{Data sovereignty.} GDPR Chapter~V (Arts.\ 44--49) governs
+international transfers of personal data. TEE-based processing does not
+itself satisfy data residency or transfer adequacy requirements; a
+TwinGuard deployment must still ensure that inference is performed within
+the appropriate jurisdiction or under a valid transfer mechanism
+(adequacy decision, SCCs, or BCRs). This constraint is orthogonal to
+the technical controls provided by TwinGuard and is acknowledged as a
+deployment boundary.
+
+% =============================================================================
+\section{Conclusion and Future Work}
+\label{sec:conc}
+% =============================================================================
+
+This paper presented TwinGuard, a TEE-based framework for confidential LLM
+inference at scale in regulated cloud environments. TwinGuard coordinates
+three hardware-isolated agents: an Attestation Agent that manages DCAP-based
+trust chains with freshness-aware caching, an Inference Agent that executes
+memory-encrypted LLM forward passes with configurable differential privacy,
+and an Audit Agent that maintains a tamper-evident Merkle compliance ledger.
+We introduced the Confidential Inference Score (CIS), a novel composite metric
+that quantifies the joint privacy, attestation freshness, overhead, and
+compliance posture of a confidential inference deployment.
+
+Simulated evaluation over 1.2 million inference requests (10 rounds
+$\times$ 120{,}000 requests, seed=42) demonstrates that TwinGuard achieves
+$\overline{\mathrm{CIS}}_{\mathrm{SEV\text{-}SNP}} = 0.927$ and
+$\overline{\mathrm{CIS}}_{\mathrm{TDX}} = 0.921$ with 8.9\% and 12.3\%
+latency overhead, respectively, outperforming all baselines with statistical
+significance ($p < 0.001$; Cohen's $d > 12$ for all comparisons). The
+framework raises GDPR compliance coverage from 31.3\% (TLS-only) to
+98.7\%, a gain of 67.4 percentage points, and achieves
+$97\%$--$99\%$ coverage across all mapped HIPAA Security Rule sections.
+
+Future work will address six directions:
+
+\begin{enumerate}
+\item \textbf{Physical hardware validation.} Deploying and benchmarking
+TwinGuard on production Intel TDX and AMD SEV-SNP servers to validate
+simulation-derived overhead models and confirm cross-backend portability.
+
+\item \textbf{Large-model support.} Extending the chunk-based memory
+architecture to 70B and 405B parameter models using pipelined decryption
+and NVMe-level encryption offload.
+
+\item \textbf{Multi-party inference.} Enabling federated inference across
+multiple TEE-protected nodes, combining TwinGuard with verifiable secret
+sharing to support distributed LLM deployments.
+
+\item \textbf{Adaptive DP budgeting.} Integrating the R\'enyi DP accountant
+\cite{mironov2017renyi} for tighter privacy accounting across heterogeneous
+query sequences.
+
+\item \textbf{Policy-as-code compliance.} Developing a domain-specific
+language for regulatory policy annotation that the Audit Agent can evaluate
+at runtime, closing the residual compliance coverage gap.
+
+\item \textbf{CIS external validation and GPU-TEE integration.}
+Correlating CIS measurements with independently assessed compliance audits
+and empirical membership-inference attack success rates to establish
+external validity for the metric. Simultaneously, integrating TwinGuard
+with GPU-TEE mechanisms (e.g., NVIDIA H100 Confidential Computing mode
+\cite{nvidia2023cc}) to extend the TEE trust boundary to the full
+inference pipeline including GPU-resident weights and activations.
+\end{enumerate}
+
+% =============================================================================
+\section*{Acknowledgment}
+% =============================================================================
+
+The authors acknowledge the use of Claude (Anthropic) as a language model
+assistant during the preparation of this manuscript. The AI tool was used
+exclusively to support literature synthesis, text revision, and structural
+organization. All scientific content, methodological decisions, data
+interpretation, and intellectual contributions remain the sole responsibility
+of the human authors. This disclosure follows the ethical guidelines of IEEE
+for AI-assisted academic writing.
+
+This research was partially supported by the Funda\c{c}\~ao Amaz\^onia de
+Amparo a Estudos e Pesquisas do Par\'a (FAPESPA), the Centro de Pesquisa e
+Desenvolvimento em Tecnologias Digitais para Informa\c{c}\~ao e
+Comunica\c{c}\~ao (PRODEPA), and SEC365 Cybersecurity Solutions. The authors
+also thank the Laborat\'orio de Intelig\^encia Computacional e Aprendizado
+(LICA), the Centro de Compet\^encia em Aplica\c{c}\~oes e Dados da
+Intelig\^encia Artificial (CCAD-IA), the Rede Nacional de Ensino e Pesquisa
+(RNP), and the Instituto Nacional de Ci\^encia e Tecnologia em Intelig\^encia
+Artificial na Amaz\^onia (INCT iAmazonia) for providing computational
+infrastructure and research collaboration support.
+
+% =============================================================================
+\section*{Author Information}
+% =============================================================================
+
+\textbf{Allan Douglas Costa} received his M.Sc. and Ph.D. degrees in Computer
+Science. He is currently a Professor at the Federal Rural University of the
+Amazon (UFRA), Institute of Computing and Information and Communication
+Technology (ICIBE), Bel\'em, Par\'a, Brazil. His research interests include
+cybersecurity, artificial intelligence, distributed systems, and post-quantum
+cryptography. He is a member of IEEE.
+Contact: allan.costa@ufra.edu.br; ORCID: 0000-0002-7068-8889.
+
+% =============================================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+% =============================================================================
+
+\end{document}

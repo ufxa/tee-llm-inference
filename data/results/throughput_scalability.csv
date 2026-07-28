@@ -1,0 +1,11 @@
+system,concurrent_clients,throughput_mean,throughput_std
+TLS-only,100,1024,18
+TLS-only,500,987,21
+TLS-only,1000,954,24
+TLS-only,2000,923,27
+TLS-only,5000,878,31
+TwinGuard,100,891,15
+TwinGuard,500,847,17
+TwinGuard,1000,821,19
+TwinGuard,2000,789,22
+TwinGuard,5000,751,25
