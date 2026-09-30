@@ -15,5 +15,6 @@ config/server*.json
 __pycache__/
 *.pyc
 .DS_Store
+.worktrees/
 data/raw/
 paper/main.pdf
