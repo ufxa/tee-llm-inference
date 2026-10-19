@@ -1,0 +1,45 @@
+{
+  "batch_size": 1024,
+  "concurrency": 16,
+  "created_at_utc": "2026-10-06T22:40:44.451247+00:00",
+  "dataset": {
+    "dataset_file": "twinguard-calibration-1000.jsonl.gz",
+    "dataset_sha256": "129d47533c41376d751317d48080f5c2b990156c6b927c8c085dd6124052400c",
+    "query_length": {
+      "max": 512,
+      "min": 50
+    },
+    "requests_per_round": 100,
+    "round_counts": {
+      "0": 100,
+      "1": 100,
+      "2": 100,
+      "3": 100,
+      "4": 100,
+      "5": 100,
+      "6": 100,
+      "7": 100,
+      "8": 100,
+      "9": 100
+    },
+    "rounds": 10,
+    "seed": 42,
+    "source_dataset": "twinguard-1.2m.jsonl.gz",
+    "source_selection": "request_id modulo 1200 equals zero",
+    "split_counts": {
+      "ablation": 187,
+      "evaluation": 813
+    },
+    "total_requests": 1000
+  },
+  "endpoint": "http://127.0.0.1:8000/v1/completions",
+  "evaluation_type": "experimental_rtx5090_workload",
+  "hardware_tee_execution": false,
+  "max_tokens": 128,
+  "model": "Llama-2-7B-GPTQ",
+  "temperature": 0.0,
+  "timeout": 120.0,
+  "workload": "data/workloads/canonical/twinguard-calibration-1000.jsonl.gz",
+  "workload_manifest": "data/workloads/canonical/twinguard-calibration-1000.manifest.json",
+  "workload_sha256": "129d47533c41376d751317d48080f5c2b990156c6b927c8c085dd6124052400c"
+}

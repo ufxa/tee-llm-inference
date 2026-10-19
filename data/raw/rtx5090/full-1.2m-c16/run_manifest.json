@@ -1,0 +1,58 @@
+{
+  "batch_size": 1024,
+  "concurrency": 16,
+  "created_at_utc": "2026-10-06T23:32:41.069038+00:00",
+  "dataset": {
+    "dataset_file": "twinguard-1.2m.jsonl.gz",
+    "dataset_sha256": "74970d84b886a4a388100db125155a80972492f846e16ec00c4acf6d8f3f260e",
+    "generator_version": "1.0",
+    "model_id": "TheBloke/Llama-2-7B-GPTQ",
+    "observed_query_length": {
+      "max": 512,
+      "min": 50
+    },
+    "query_length": {
+      "distribution": "uniform_inclusive",
+      "max": 512,
+      "min": 50
+    },
+    "requests_per_round": 120000,
+    "rounds": 10,
+    "seed": 42,
+    "seed_streams": {
+      "content": 44,
+      "lengths": 42,
+      "split": 43
+    },
+    "split": {
+      "ablation_fraction": 0.19999999999999996,
+      "evaluation_fraction": 0.8
+    },
+    "split_counts": {
+      "ablation": 240000,
+      "evaluation": 960000
+    },
+    "token_pool_sha256": "a1466be5a12d8617ab36a2afccd485ba5a609af8daa028554976b2b76e46b4e8",
+    "token_pool_size": 42,
+    "tokenizer": {
+      "files": {
+        "special_tokens_map.json": "ff3b4a612c4e447acb02d40071bddd989fe0da87eb5b7fe0dbadfc4f74de7531",
+        "tokenizer.json": "8eea70c4866c4f1320ba096fc986ac82038a8374dbe135212ba7628835b4a6f1",
+        "tokenizer.model": "9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347",
+        "tokenizer_config.json": "516c6167c884793a738c440e29ccb80c15e1493ffc965affc69a1a8ddef4572a"
+      },
+      "path_name": "llama-2-7b-gptq"
+    },
+    "total_requests": 1200000
+  },
+  "endpoint": "http://127.0.0.1:8000/v1/completions",
+  "evaluation_type": "experimental_rtx5090_workload",
+  "hardware_tee_execution": false,
+  "max_tokens": 128,
+  "model": "Llama-2-7B-GPTQ",
+  "temperature": 0.0,
+  "timeout": 120.0,
+  "workload": "data/workloads/canonical/twinguard-1.2m.jsonl.gz",
+  "workload_manifest": "data/workloads/canonical/twinguard-1.2m.manifest.json",
+  "workload_sha256": "74970d84b886a4a388100db125155a80972492f846e16ec00c4acf6d8f3f260e"
+}

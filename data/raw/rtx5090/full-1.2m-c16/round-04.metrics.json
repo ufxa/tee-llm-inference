@@ -1,0 +1,17 @@
+{
+  "complete": true,
+  "completion_tokens_per_second": 1806.3851982705346,
+  "elapsed_seconds": 8503.10776168108,
+  "failed_requests": 0,
+  "latency_std_ms": 66.38387908092704,
+  "mean_latency_ms": 1131.852308805318,
+  "p50_latency_ms": 1131.1680097132921,
+  "p95_latency_ms": 1239.6519109606743,
+  "p99_latency_ms": 1306.6648840904236,
+  "requests": 120000,
+  "requests_per_second": 14.112487265041526,
+  "round": 4,
+  "samples_file": "round-04.samples.jsonl.gz",
+  "success_rate": 1.0,
+  "successful_requests": 120000
+}

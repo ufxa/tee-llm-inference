@@ -69,8 +69,7 @@
   booktitle = {Proceedings of the 2nd International Workshop on Hardware and
                Architectural Support for Security and Privacy (HASP)},
   year      = {2013},
-  publisher = {ACM},
-  doi       = {10.1145/2487726.2488370}
+  publisher = {ACM}
 }
 
 @techreport{inteltdx2023,
@@ -102,19 +101,19 @@
   note        = {Available: \url{https://developer.arm.com/documentation/den0096}}
 }
 
-@article{sabt2015trusted,
+@inproceedings{sabt2015trusted,
   author  = {Sabt, M. and Achemlal, M. and Bouabdallah, A.},
   title   = {Trusted Execution Environment: What It Is, and What It Is Not},
-  journal = {IEEE Trustcom/BigDataSE/ISPA},
+  booktitle = {2015 IEEE Trustcom/BigDataSE/ISPA},
   year    = {2015},
   pages   = {57--64},
-  doi     = {10.1109/Trustcom/BigDataSE/ISPA.2015.357}
+  doi       = {10.1109/Trustcom.2015.357}
 }
 
-@inproceedings{pinto2019demystifying,
+@article{pinto2019demystifying,
   author    = {Pinto, S. and Santos, N.},
   title     = {Demystifying {ARM} {TrustZone}: A Comprehensive Survey},
-  booktitle = {ACM Computing Surveys},
+  journal    = {ACM Computing Surveys},
   year      = {2019},
   volume    = {51},
   number    = {6},
@@ -122,11 +121,11 @@
   doi       = {10.1145/3291047}
 }
 
-@inproceedings{johnson2016intel,
+@techreport{johnson2016intel,
   author    = {Johnson, S. and Makaram, M. and Santoni, A. and Scarlata, V.},
   title     = {Supporting Third Party Attestation for {Intel} {SGX} with
                {Intel} Data Center Attestation Primitives},
-  booktitle = {Intel Technical White Paper},
+  institution = {Intel Corporation},
   year      = {2016},
   note      = {Available: \url{https://www.intel.com/content/www/us/en/developer/tools/software-guard-extensions/attestation-services.html}}
 }
@@ -140,8 +139,7 @@
   booktitle = {Proceedings of the 27th USENIX Security Symposium},
   year      = {2018},
   pages     = {1651--1668},
-  publisher = {USENIX Association},
-  doi       = {10.5555/3277203.3277343}
+  publisher = {USENIX Association}
 }
 
 @inproceedings{rathee2020cryptflow2,
@@ -156,14 +154,15 @@
   doi       = {10.1145/3372297.3417274}
 }
 
-@inproceedings{tramer2018slalom,
+@inproceedings{tramer2019slalom,
   author    = {Tram{\`e}r, F. and Boneh, D.},
   title     = {Slalom: Fast, Verifiable and Private Execution of Neural
                Networks in Trusted Hardware},
   booktitle = {Proceedings of the International Conference on Learning
                Representations (ICLR)},
   year      = {2019},
-  note      = {Available: \url{https://openreview.net/forum?id=rJVorjCcKQ}}
+  note      = {Available: \url{https://openreview.net/forum?id=rJVorjCcKQ}},
+  doi       = {10.48550/arXiv.1806.03287}
 }
 
 @inproceedings{mo2021ppfl,
@@ -189,13 +188,16 @@
   note      = {Available: \url{https://proceedings.neurips.cc/paper_files/paper/2022/hash/64e2449d74f84e5b1a5c96ba7b3d308e-Abstract-Conference.html}}
 }
 
-@inproceedings{dong2023ciphergpt,
-  author    = {Dong, Y. and Chen, H. and Tan, J. and Zhang, Z. and Zhao, H.
-               and Lu, J. and Hu, Z. and Suresh, A. T. and Xu, G.},
-  title     = {{CipherGPT}: Secure Two-Party {GPT} Inference},
-  booktitle = {IACR Cryptology ePrint Archive (presented at IEEE S\&P 2024)},
-  year      = {2023},
-  note      = {ePrint 2023/1147. DOI: 10.1109/SP54263.2024.00115}
+@article{dong2023ciphergpt,
+  author  = {X. Hou and J. Liu and J. Li and Y. Li and J. Zhang and W. Lu and C. Hong and K. Ren},
+  title   = {{CipherGPT}: Secure two-party {GPT} inference},
+  journal = {IEEE Trans. Dependable Secure Comput.},
+  volume  = {23},
+  number  = {3},
+  pages   = {6748--6762},
+  year    = {2026},
+  note    = {Preprint: IACR Cryptology ePrint Archive, Paper 2023/1147},
+  doi     = {10.1109/TDSC.2026.3667722}
 }
 
 @inproceedings{akimoto2023privformer,
@@ -207,42 +209,6 @@
   pages     = {392--407},
   publisher = {IEEE},
   doi       = {10.1109/EuroSP57164.2023.00031}
-}
-
-@inproceedings{liang2023teeslm,
-  author    = {Liang, C. and Zhou, L. and Liu, Y. and Guo, X.},
-  title     = {{TEE-SLM}: Confidential Inference for Small Language Models
-               via {Intel} {TDX}},
-  booktitle = {Proceedings of the 39th Annual Computer Security Applications
-               Conference (ACSAC)},
-  year      = {2023},
-  pages     = {712--724},
-  publisher = {ACM},
-  doi       = {10.1145/3627106.3627192}
-}
-
-@inproceedings{li2024secureinfer,
-  author    = {Li, Z. and Chen, Y. and Wang, H. and Liu, J.},
-  title     = {{SecureInfer}: Enabling Confidential {LLM} Inference on
-               {SGX}-{GPU} Hybrid Architectures},
-  booktitle = {Proceedings of the 45th IEEE Symposium on Security and
-               Privacy (S\&P)},
-  year      = {2024},
-  pages     = {1203--1219},
-  publisher = {IEEE},
-  doi       = {10.1109/SP54263.2024.00089}
-}
-
-@inproceedings{chen2024confllm,
-  author    = {Chen, R. and Wu, T. and Zhang, S. and Li, M.},
-  title     = {{ConfLLM}: Scaling Confidential Language Model Inference with
-               {AMD} {SEV-SNP}},
-  booktitle = {Proceedings of the 2024 ACM SIGSAC Conference on Computer
-               and Communications Security (CCS)},
-  year      = {2024},
-  pages     = {2891--2908},
-  publisher = {ACM},
-  doi       = {10.1145/3658644.3670364}
 }
 
 % ---- Differential Privacy ---------------------------------------------------
@@ -268,12 +234,15 @@
 }
 
 @inproceedings{yu2022differentially,
-  author    = {Yu, D. and Naous, T. and Arora, S.},
+  author    = {Yu, D. and Naik, S. and Backurs, A. and Gopi, S. and Inan, H. A.
+               and Kamath, G. and Kulkarni, J. and Lee, Y. T. and Manoel, A.
+               and Wutschitz, L. and Yekhanin, S. and Zhang, H.},
   title     = {Differentially Private Fine-Tuning of Language Models},
   booktitle = {Proceedings of the 10th International Conference on Learning
                Representations (ICLR)},
   year      = {2022},
-  note      = {Available: \url{https://openreview.net/forum?id=Q42f0dfjECO}}
+  note      = {Available: \url{https://openreview.net/forum?id=Q42f0dfjECO}},
+  doi       = {10.48550/arXiv.2110.06500}
 }
 
 @inproceedings{mironov2017renyi,
@@ -301,13 +270,20 @@
 % ---- LLM Security -----------------------------------------------------------
 
 @inproceedings{carlini2024stealing,
-  author    = {Carlini, N. and Ippolito, D. and Jagielski, M. and Lee, K.
-               and Tram{\`e}r, F. and Zhang, C.},
-  title     = {Quantifying Memorization Across Neural Language Models},
-  booktitle = {Proceedings of the 11th International Conference on Learning
-               Representations (ICLR)},
-  year      = {2023},
-  note      = {Available: \url{https://openreview.net/forum?id=TatRHT_1cK}}
+  author    = {Carlini, N. and Paleka, D. and Dvijotham, K. D. and Steinke, T.
+               and Hayase, J. and Cooper, A. F. and Lee, K. and Jagielski, M.
+               and Nasr, M. and Conmy, A. and Yona, I. and Wallace, E. and Rolnick, D.
+               and Tram{\`e}r, F.},
+  title     = {Stealing Part of a Production Language Model},
+  booktitle = {Proceedings of the 41st International Conference on Machine
+               Learning (ICML)},
+  year      = {2024},
+  volume    = {235},
+  series    = {Proceedings of Machine Learning Research},
+  pages     = {5680--5705},
+  publisher = {PMLR},
+  url       = {https://proceedings.mlr.press/v235/carlini24a.html},
+  doi       = {10.48550/arXiv.2403.06634}
 }
 
 @inproceedings{carlini2021extracting,
@@ -364,8 +340,7 @@
   booktitle = {Proceedings of the 11th USENIX Workshop on Offensive
                Technologies (WOOT)},
   year      = {2017},
-  publisher = {USENIX Association},
-  doi       = {10.5555/3154768.3154779}
+  publisher = {USENIX Association}
 }
 
 @inproceedings{xu2015controlled,
@@ -456,6 +431,28 @@
   doi       = {10.1109/DSC63192.2024.10770089}
 }
 
+@article{chrapek2025confidential,
+  author  = {Chrapek, Marcin and Copik, Marcin and Mettaz, Etienne and Hoefler, Torsten},
+  title   = {Confidential {LLM} Inference: Performance and Cost Across {CPU} and {GPU} {TEE}s},
+  journal = {arXiv preprint arXiv:2509.18886},
+  year    = {2025},
+  doi     = {10.48550/arXiv.2509.18886},
+  url     = {https://arxiv.org/abs/2509.18886}
+}
+
+@inproceedings{tan2024pipellm,
+  author  = {Tan, Yifan and Tan, Cheng and Mi, Zeyu and Chen, Haibo},
+  title   = {{PipeLLM}: Fast and Confidential Large Language Model Services with Speculative Pipelined Encryption},
+  booktitle = {Proceedings of the 30th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 1},
+  series  = {ASPLOS '25},
+  pages   = {843--857},
+  address = {Rotterdam, Netherlands},
+  publisher = {ACM},
+  year    = {2025},
+  doi     = {10.1145/3669940.3707224},
+  url     = {https://doi.org/10.1145/3669940.3707224}
+}
+
 @article{nilsson2024survey,
   author  = {Nilsson, A. and Josyula, P. and Raza, S.},
   title   = {A Survey on the Application of {TEE}s in Emerging {AI} Systems},
@@ -469,7 +466,7 @@
 
 % ---- Cryptographic Foundations ----------------------------------------------
 
-@article{boneh2009decision,
+@article{boneh1998decision,
   author  = {Boneh, D.},
   title   = {The Decision {Diffie-Hellman} Problem},
   journal = {Lecture Notes in Computer Science (ANTS)},
@@ -479,20 +476,22 @@
   doi     = {10.1007/BFb0054851}
 }
 
-@inproceedings{krawczyk2010cryptographic,
+@techreport{krawczyk2010cryptographic,
   author    = {Krawczyk, H. and Eronen, P.},
   title     = {{HMAC}-based Extract-and-Expand Key Derivation Function
                ({HKDF})},
-  booktitle = {RFC 5869, Internet Engineering Task Force (IETF)},
+  institution = {Internet Engineering Task Force (IETF)},
+  type      = {RFC},
+  number    = {5869},
   year      = {2010},
   doi       = {10.17487/RFC5869}
 }
 
-@inproceedings{bellare2004foundations,
+@article{bellare2008foundations,
   author    = {Bellare, M. and Namprempre, C.},
   title     = {Authenticated Encryption: Relations Among Notions and Analysis
                of the Generic Composition Paradigm},
-  booktitle = {Journal of Cryptology},
+  journal   = {Journal of Cryptology},
   year      = {2008},
   volume    = {21},
   number    = {4},
@@ -513,20 +512,20 @@
 
 % ---- Cloud Security and Compliance ------------------------------------------
 
-@article{gruschka2018privacy,
+@inproceedings{gruschka2010privacy,
   author  = {Gruschka, N. and Jensen, M.},
   title   = {Attack Surfaces: A Taxonomy for Attacks on Cloud Services},
-  journal = {IEEE Cloud Computing},
+  booktitle = {2010 IEEE 3rd International Conference on Cloud Computing},
   year    = {2010},
-  volume  = {1},
-  pages   = {1--10},
-  doi     = {10.1109/MCC.2010.17}
+  pages   = {276--279},
+  publisher = {IEEE Computer Society},
+  doi     = {10.1109/CLOUD.2010.23}
 }
 
-@inproceedings{ryan2011cloud,
+@article{ryan2011cloud,
   author    = {Ryan, M. D.},
   title     = {Cloud Computing Privacy Concerns on Our Doorstep},
-  booktitle = {Communications of the ACM},
+  journal    = {Communications of the ACM},
   year      = {2011},
   volume    = {54},
   number    = {1},
@@ -534,10 +533,10 @@
   doi       = {10.1145/1866739.1866751}
 }
 
-@article{pearson2012privacy,
+@inproceedings{pearson2012privacy,
   author  = {Pearson, S. and Benameur, A.},
   title   = {Privacy, Security and Trust Issues Arising from Cloud Computing},
-  journal = {2010 IEEE Second International Conference on Cloud Computing
+  booktitle = {2010 IEEE Second International Conference on Cloud Computing
              Technology and Science},
   year    = {2010},
   pages   = {693--702},
@@ -566,21 +565,6 @@
   number    = {2},
   pages     = {388--405},
   doi       = {10.1109/TSC.2023.3330781}
-}
-
-% ---- Market and Context -----------------------------------------------------
-
-@article{marketsandmarkets2024,
-  author  = {Barhoom, T. and Al-Dabbagh, R. and Yasin, A.},
-  title   = {Confidential Computing in Cloud Environments: Market Trends,
-             Security Architectures, and Adoption Barriers},
-  journal = {IEEE Access},
-  year    = {2024},
-  volume  = {12},
-  pages   = {1--18},
-  doi     = {10.1109/ACCESS.2024.3351842},
-  note    = {Market growth projections for the confidential AI inference
-             segment are independently corroborated by this survey.}
 }
 
 % ---- Compliance Frameworks --------------------------------------------------
@@ -691,15 +675,6 @@
   doi         = {10.6028/NIST.AI.100-1}
 }
 
-@article{iso27001_2022,
-  author  = {{ISO/IEC}},
-  title   = {{ISO/IEC} 27001:2022 Information Security, Cybersecurity and
-             Privacy Protection: Information Security Management Systems},
-  journal = {International Organization for Standardization},
-  year    = {2022},
-  note    = {Available: \url{https://www.iso.org/standard/27001}}
-}
-
 @inproceedings{lopez2023hipaa,
   author    = {Lopez, D. M. and Blobel, B.},
   title     = {{HIPAA} Compliance in {AI}-Based Healthcare Applications:
@@ -765,4 +740,58 @@
   type        = {Technical White Paper},
   number      = {WP-11454-001\_v01},
   url         = {https://resources.nvidia.com/en-us-confidential-computing}
+}
+
+@article{touvron2023llama,
+  author  = {H. Touvron and L. Martin and K. Stone and others},
+  title   = {Llama 2: Open foundation and fine-tuned chat models},
+  journal = {arXiv preprint arXiv:2307.09288},
+  year    = {2023},
+  doi       = {10.48550/arXiv.2307.09288}
+}
+
+@inproceedings{frantar2022gptq,
+  author    = {E. Frantar and S. Ashkboos and T. Hoefler and D. Alistarh},
+  title     = {{GPTQ}: Accurate post-training quantization for generative pre-trained transformers},
+  booktitle = {Proc. 11th Int. Conf. Learning Representations (ICLR)},
+  year      = {2023},
+  doi       = {10.48550/arXiv.2210.17323}
+}
+
+@inproceedings{mcsherry2007mechanism,
+  author    = {F. McSherry and K. Talwar},
+  title     = {Mechanism design via differential privacy},
+  booktitle = {Proc. 48th Annu. IEEE Symp. Foundations of Computer Science (FOCS)},
+  pages     = {94--103},
+  year      = {2007},
+  doi       = {10.1109/FOCS.2007.66}
+}
+
+@inproceedings{elhindi2022sgx,
+  author    = {M. El-Hindi and T. Ziegler and M. Heinrich and A. Lutsch and Z. Zhao and C. Binnig},
+  title     = {Benchmarking the second generation of {Intel SGX} hardware},
+  booktitle = {Proc. 18th Int. Workshop Data Management on New Hardware (DaMoN)},
+  pages     = {1--8},
+  year      = {2022},
+  doi       = {10.1145/3533737.3535098}
+}
+
+@techreport{lenovo2023sgx,
+  author      = {J. Liu and B. Liu},
+  title       = {Enabling {Intel SGX} on {Lenovo ThinkSystem} Servers},
+  institution = {Lenovo Press},
+  number      = {LP1471},
+  year        = {2023},
+  note        = {Updated Dec. 18, 2023. Available: https://lenovopress.lenovo.com/LP1471}
+}
+
+@article{misono2024cvm,
+  author  = {M. Misono and D. Stavrakakis and N. Santos and P. Bhatotia},
+  title   = {Confidential {VMs} explained: An empirical analysis of {AMD SEV-SNP} and {Intel TDX}},
+  journal = {Proc. ACM Meas. Anal. Comput. Syst.},
+  volume  = {8},
+  number  = {3},
+  pages   = {36:1--36:42},
+  year    = {2024},
+  doi     = {10.1145/3700418}
 }

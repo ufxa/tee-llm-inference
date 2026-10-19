@@ -16,5 +16,5 @@ __pycache__/
 *.pyc
 .DS_Store
 .worktrees/
-data/raw/
+.reposkillopt/
 paper/main.pdf

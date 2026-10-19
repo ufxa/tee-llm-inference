@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-TwinGuard Simulation — Vectorized (NumPy) version for public repository.
-Generates all results reported in the paper (seed=42, 10 rounds × 120k requests).
+TwinGuard Simulation — Vectorized (NumPy) version for the public repository.
+Generates the modeled TEE results reported in the paper (seed=42,
+10 rounds × 120k requests). The physical RTX 5090 baseline is not regenerated
+by this script.
 
 Usage:
     python simulate_twinguard.py --rounds 10 --requests 120000 --seed 42
@@ -32,7 +34,11 @@ TEE_OVERHEAD = {
     "SEV-SNP": (0.089, 0.008),
     "SGX":     (0.147, 0.012),
 }
-BASELINE_LAT = (47.3, 2.1)
+# Normalized latency parameter used only by the relative-overhead model. The
+# physical RTX 5090 end-to-end baseline reported in the paper is 1131.52 ms;
+# this 47.3 ms value is not a physical measurement and must not be presented as
+# one. The spread is likewise a model input, not a recorded baseline deviation.
+MODEL_BASELINE_LAT_MS = (47.3, 2.1)
 
 BASELINES = {
     "Plaintext":   (0.187, 0.034),
@@ -45,6 +51,27 @@ THROUGHPUT = {
     "TLS-only":  {100: (1024,18), 500: (987,21), 1000: (954,24), 2000: (923,27), 5000: (878,31)},
     "TwinGuard": {100: (891,15),  500: (847,17), 1000: (821,19), 2000: (789,22), 5000: (751,25)},
 }
+
+
+# ---- Technical-control mapping (paper Table 3) -------------------------------
+# Each control is scored per regime: 1.0 = satisfied by design, 0.5 = partial,
+# 0.0 = not provided. Coverage = mean score over the eight mapped controls.
+CONTROLS = [
+    "hardware_memory_encryption", "remote_attestation", "output_perturbation",
+    "encrypted_session", "tamper_evident_audit_log", "access_control",
+    "data_minimization", "breach_detection",
+]
+TWINGUARD_CONTROLS = {c: {"gdpr": 1.0, "hipaa": 1.0} for c in CONTROLS}
+# Query scoping cannot be fully automated without domain policy annotations.
+TWINGUARD_CONTROLS["data_minimization"] = {"gdpr": 0.5, "hipaa": 0.5}
+TLS_ONLY_CONTROLS = {c: {"gdpr": 0.0, "hipaa": 0.0} for c in CONTROLS}
+TLS_ONLY_CONTROLS["encrypted_session"] = {"gdpr": 1.0, "hipaa": 1.0}
+TLS_ONLY_CONTROLS["access_control"]    = {"gdpr": 0.5, "hipaa": 0.5}
+TLS_ONLY_CONTROLS["data_minimization"] = {"gdpr": 0.5, "hipaa": 0.5}
+
+
+def coverage(table: dict, regime: str) -> float:
+    return sum(table[c][regime] for c in CONTROLS) / len(CONTROLS)
 
 
 def simulate_round(rng: np.random.Generator, n: int, backend: str,
@@ -78,19 +105,20 @@ def simulate_round(rng: np.random.Generator, n: int, backend: str,
 
     # Overhead & latency
     overhead = np.clip(rng.normal(overhead_mu, overhead_sig, n), 0, 1)
-    base_lat = rng.normal(*BASELINE_LAT, n)
+    base_lat = rng.normal(*MODEL_BASELINE_LAT_MS, n)
     tee_lat  = base_lat * (1.0 + overhead)
 
     # Privacy scores
     PG = np.full(n, (1.0 - epsilon / DP_EPSILON_MAX))  # MEE always active
 
-    # Compliance
-    GDPR_COV  = np.clip(rng.normal(0.987, 0.003, n), 0, 1)
-    HIPAA_COV = np.clip(rng.normal(0.973, 0.003, n), 0, 1)
+    # Technical-control coverage: deterministic, control by control (Table 3)
+    GDPR_COV  = np.full(n, coverage(TWINGUARD_CONTROLS, "gdpr"))
+    HIPAA_COV = np.full(n, coverage(TWINGUARD_CONTROLS, "hipaa"))
     CS = (GDPR_COV + HIPAA_COV) / 2.0
 
     # Overhead penalty
-    OP = np.clip((tee_lat - BASELINE_LAT[0]) / BASELINE_LAT[0], 0, 1)
+    OP = np.clip((tee_lat - MODEL_BASELINE_LAT_MS[0]) /
+                 MODEL_BASELINE_LAT_MS[0], 0, 1)
 
     # CIS
     CIS = ALPHA * PG + BETA * AF + GAMMA * (1.0 - OP) + DELTA * CS
@@ -157,21 +185,27 @@ def main():
             "hipaa_coverage": float(np.mean([r["hipaa_coverage"] for r in rounds])),
         }
 
-    # Wilcoxon signed-rank test: TwinGuard-TDX vs each baseline
-    tdx_cis = [r["cis_mean"] for r in all_rounds["TDX"]]
-    wilcoxon_results = {}
-    for bname, (bmu, bsig) in BASELINES.items():
-        fake_baseline = np.random.default_rng(args.seed + 99).normal(bmu, bsig, args.rounds)
-        stat, pval = stats.wilcoxon(tdx_cis, fake_baseline.tolist())
-        d = (np.mean(tdx_cis) - bmu) / math.sqrt((np.std(tdx_cis)**2 + bsig**2) / 2)
-        wilcoxon_results[bname] = {"statistic": float(stat), "p_value": float(pval),
-                                    "cohens_d": float(d)}
-
     # Save JSON
     out = RESULTS_DIR / f"twinguard_results_seed{args.seed}.json"
     with open(out, "w") as f:
-        json.dump({"config": vars(args), "aggregate": agg,
-                   "wilcoxon": wilcoxon_results}, f, indent=2)
+        json.dump({
+            "config": vars(args),
+            "model": {
+                "baseline_latency_mean_ms": MODEL_BASELINE_LAT_MS[0],
+                "baseline_latency_std_ms": MODEL_BASELINE_LAT_MS[1],
+                "baseline_latency_is_normalized": True,
+                "physical_baseline_latency_ms": 1131.52,
+                "note": "The physical baseline is provenance context; TEE outputs use the normalized model parameter."
+            },
+            "aggregate": agg,
+            "technical_coverage": {
+                "method": "deterministic per-control scores (1/0.5/0) over 8 controls",
+                "twinguard": {"gdpr": coverage(TWINGUARD_CONTROLS, "gdpr"),
+                              "hipaa": coverage(TWINGUARD_CONTROLS, "hipaa")},
+                "tls_only": {"gdpr": coverage(TLS_ONLY_CONTROLS, "gdpr"),
+                             "hipaa": coverage(TLS_ONLY_CONTROLS, "hipaa")},
+            }
+        }, f, indent=2)
     print(f"\n[OK] JSON: {out}")
 
     # Save CIS CSV
@@ -183,7 +217,7 @@ def main():
             w.writerow([bname, f"{bmu:.4f}", f"{bsig:.4f}", ""])
         for backend, vals in agg.items():
             w.writerow([f"TwinGuard-{backend}", f"{vals['cis_mean']:.4f}",
-                        f"{vals['cis_std']:.4f}", f"{vals['overhead_mean']*100:.1f}"])
+                        f"{vals['cis_std']:.8f}", f"{vals['overhead_mean']*100:.1f}"])
     print(f"[OK] CSV: {cis_csv}")
 
     # Save throughput CSV
@@ -202,9 +236,6 @@ def main():
         print(f"  TwinGuard-{backend}: CIS={vals['cis_mean']:.4f} "
               f"[{vals['cis_ci95_lo']:.4f}, {vals['cis_ci95_hi']:.4f}] "
               f"OH={vals['overhead_mean']*100:.1f}%")
-    print("\n=== WILCOXON SIGNED-RANK (TDX vs Baselines) ===")
-    for bname, res in wilcoxon_results.items():
-        print(f"  vs {bname}: p={res['p_value']:.4e} d={res['cohens_d']:.2f}")
 
 
 if __name__ == "__main__":

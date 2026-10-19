@@ -1,13 +1,13 @@
 # TwinGuard: Confidential AI Inference at Scale
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![IEEE TDSC](https://img.shields.io/badge/Target-IEEE%20TDSC-blue)](https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=8858)
+[![IEEE Access](https://img.shields.io/badge/Target-IEEE%20Access-blue)](https://ieeeaccess.ieee.org)
 [![DOI](https://img.shields.io/badge/DOI-pending-lightgrey)]()
 [![GitHub](https://img.shields.io/badge/GitHub-ufxa%2Ftee--llm--inference-black?logo=github)](https://github.com/ufxa/tee-llm-inference)
 
-**A TEE-Based Framework for Privacy-Preserving Large Language Model Deployment in Regulated Cloud Environments**
+**Confidential AI Inference at Scale: A TEE-Based Framework for Large Language Models in Regulated Cloud Environments, with a Trace-Driven Projection over 1.2 Million Real Requests**
 
-> Submitted to IEEE Transactions on Dependable and Secure Computing (TDSC, IF 7.3)
+> Prepared for submission to IEEE Access
 
 ---
 
@@ -22,11 +22,18 @@ Intel SGX). We introduce the Confidential Inference Score (CIS), a novel
 composite metric quantifying the joint privacy, attestation freshness, overhead,
 and regulatory compliance posture of a confidential inference deployment.
 
-**Key results (simulated, 1.2M requests, seed=42):**
-- CIS: 0.921 ± 0.012 (TwinGuard-TDX) vs 0.431 (TLS-only baseline)
-- Latency overhead: 12.3% (TDX), 8.9% (SEV-SNP), 14.7% (SGX)
-- GDPR compliance coverage: 98.7%; HIPAA: 97.3%
-- Throughput: 847 req/s at 500 concurrent clients
+**Key results:**
+- Physical benchmark (no TEE): 1.2M real requests (Llama-2-7B GPTQ, vLLM) on an NVIDIA RTX 5090, 0 failures, 1,131.52 ms mean latency, 14.12 req/s; per-request traces in `data/raw/rtx5090/`
+- Trace-driven TEE projection, overheads from measured literature ranges (Chrapek et al. 2025; Misono et al. 2024), 4,000 Monte Carlo draws:
+  - projected mean latency 1,201 ms (SGX), 1,231 ms (TDX), 1,242 ms (SEV-SNP)
+  - CIS 0.928 (SGX), 0.921 (TDX), 0.918 (SEV-SNP); TLS-only 0.288, plaintext 0.250
+  - ranking uncertain: SGX ranks first in 74% of draws
+- Attestation with freshness-aware caching at the measured rate: 99.33% cache hits, 0.66% of latency
+- Design-level technical-control coverage: 93.8% (7.5/8) vs. 25.0% (2/8) for TLS-only
+
+No SGX, TDX or SEV-SNP hardware was executed. All TEE values are projections
+from the measured traces; coverage values are technical mappings, not legal
+compliance certifications.
 
 ---
 
@@ -36,18 +43,16 @@ and regulatory compliance posture of a confidential inference deployment.
 tee-llm-inference/
 ├── README.md
 ├── paper/
-│   ├── main.tex              # LaTeX source (IEEEtran)
-│   └── references.bib        # Bibliography (50 entries)
+│   ├── main.tex              # IEEE Access LaTeX source
+│   ├── references.bib        # Bibliography
+│   └── imagens/              # Figures and author biographies
 ├── src/
-│   ├── agents/               # Agent implementations
-│   ├── metrics/              # CIS metric implementation
-│   └── evaluation/           # Evaluation scripts
+│   └── evaluation/           # Projection and figure-generation scripts
 ├── data/
-│   ├── processed/            # Processed workload traces
-│   └── results/              # Simulation results (CSV/JSON)
-├── notebooks/                # Jupyter notebooks for figures
-├── scripts/
-│   └── build.sh              # tectonic main.tex
+│   ├── raw/rtx5090/          # Baseline traces and manifests
+│   └── results/              # Derived results (CSV/JSON)
+├── REPRODUCIBILITY.md        # Release scope, checks, and limitations
+├── requirements.txt          # Reproduction dependencies
 └── LICENSE
 ```
 
@@ -68,28 +73,43 @@ Requires [tectonic](https://tectonic-typesetting.github.io):
 cd paper && tectonic main.tex
 ```
 
-### Run the Simulation
+### Reproduce the results and figures
 
 ```bash
-cd src/evaluation
-python simulate_twinguard.py --rounds 10 --requests 120000 --seed 42
+python src/evaluation/project_twinguard_trace.py      # trace-driven TEE projection
+python src/evaluation/cis_weight_sensitivity.py       # CIS weight sweep
+python src/evaluation/generate_figure4_latency.py
+python src/evaluation/generate_figure5_cis.py
+python src/evaluation/generate_figure6_scalability.py
+python src/evaluation/generate_figure7_uncertainty.py
 ```
 
-Results are written to `data/results/`.
+Inputs: the measured traces in `data/raw/rtx5090/` (10 rounds x 120,000
+requests, plus the calibration sweep). Outputs go to `data/results/` and
+`paper/output/raster/`. The earlier parameterized simulator is kept in
+`src/evaluation/legacy/` for history only and is not used by the paper.
+
+Before submission, the repository will be tagged with the manuscript version.
+The tag will include the raw baseline traces, manifests, source hashes, derived
+results, and all scripts required to reproduce the trace-driven projection. No
+physical TEE measurements are claimed or included.
+
+See `REPRODUCIBILITY.md` for the reproduction boundary and `data/README.md`
+for the data inventory and integrity checks.
 
 ---
 
 ## How to Cite
 
 ```bibtex
-@article{costa2026twinguard,
-  author  = {Costa, Allan Douglas},
-  title   = {Confidential {AI} Inference at Scale: A {TEE}-Based Framework
-             for Privacy-Preserving Large Language Model Deployment
-             in Regulated Cloud Environments},
-  journal = {IEEE Transactions on Dependable and Secure Computing},
+@article{barbosa2026twinguard,
+  author  = {Barbosa, Carlos Lucas Vieira and de Souza Junior, Jos\'{e} and Costa, Allan Douglas},
+  title   = {Confidential {AI} Inference at Scale: A {TEE}-Based Framework for
+             Large Language Models in Regulated Cloud Environments, with a
+             Trace-Driven Projection over 1.2 Million Real Requests},
+  journal = {IEEE Access},
   year    = {2026},
-  note    = {Submitted}
+  note    = {Under preparation}
 }
 ```
 
@@ -106,7 +126,8 @@ CIS(q) = 0.35 * PG(q)        # Privacy Guarantee (differential privacy strength)
         + 0.15 * CS(q)        # Compliance Score (GDPR/HIPAA coverage fraction)
 ```
 
-CIS in [0, 1]. Values >= 0.90 recommended for regulated-sector deployment.
+CIS in [0, 1]. The value 0.90 is an illustrative decision threshold within
+the proposed model, not a regulatory or deployment certification threshold.
 
 ---
 

@@ -1,0 +1,11 @@
+{
+  "concurrency": 8,
+  "evaluation_type": "measured_rtx5090_baseline",
+  "hardware_tee_execution": false,
+  "mean_latency_ms": 795.0224891714752,
+  "rounds": 10,
+  "source_run": "data/results/rtx5090/calibration/workload-c8",
+  "std_latency_ms": 58.196529486405986,
+  "successful_requests": 1000,
+  "total_requests": 1000
+}
