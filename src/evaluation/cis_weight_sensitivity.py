@@ -128,7 +128,7 @@ def write_detail(path: Path, rows: list[dict[str, object]]) -> None:
         "cis_tdx", "cis_sev_snp", "cis_sgx", "winner", "ranking",
     ]
     with path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -177,7 +177,7 @@ def write_summary(path: Path, payload: dict, components: dict[str, dict[str, flo
 
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(output)
 

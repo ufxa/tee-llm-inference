@@ -232,7 +232,7 @@ def main() -> None:
     (OUT_DIR / "twinguard_results_seed42.json").write_text(json.dumps(compat, indent=2))
 
     with (OUT_DIR / "cis_comparison.csv").open("w", newline="") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         w.writerow(["system", "cis", "cis_ci95_lo", "cis_ci95_hi", "overhead_lo_pct", "overhead_mid_pct", "overhead_hi_pct"])
         for name, v in baselines.items():
             w.writerow([name, f"{v['cis']:.4f}", "", "", "", "0.0", ""])
@@ -246,7 +246,7 @@ def main() -> None:
     # Projected throughput over the measured calibration curve (Fig. 6c).
     calib = list(csv.DictReader(CALIB_CSV.open()))
     with (OUT_DIR / "tee_projected_throughput.csv").open("w", newline="") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         w.writerow(["concurrency", "measured_rps"] + [f"{b}_{k}" for b in BACKENDS for k in ("lo", "mid", "hi")])
         for row in calib:
             x, l = float(row["requests_per_second"]), float(row["mean_latency_ms"])

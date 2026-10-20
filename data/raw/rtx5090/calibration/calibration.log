@@ -1,0 +1,95 @@
+START concurrency=1
+Benchmarking workload round=0 concurrency=1
+Benchmarking workload round=1 concurrency=1
+Benchmarking workload round=2 concurrency=1
+Benchmarking workload round=3 concurrency=1
+Benchmarking workload round=4 concurrency=1
+Benchmarking workload round=5 concurrency=1
+Benchmarking workload round=6 concurrency=1
+Benchmarking workload round=7 concurrency=1
+Benchmarking workload round=8 concurrency=1
+Benchmarking workload round=9 concurrency=1
+{
+  "run_dir": "data/results/rtx5090/calibration/workload-c1",
+  "rounds_completed": 10,
+  "requests": 1000,
+  "success_rate": 1.0,
+  "mean_latency_ms": 539.7171412538737,
+  "baseline_metrics": "data/results/rtx5090/calibration/workload-c1/baseline_metrics.json"
+}
+START concurrency=2
+Benchmarking workload round=0 concurrency=2
+Benchmarking workload round=1 concurrency=2
+Benchmarking workload round=2 concurrency=2
+Benchmarking workload round=3 concurrency=2
+Benchmarking workload round=4 concurrency=2
+Benchmarking workload round=5 concurrency=2
+Benchmarking workload round=6 concurrency=2
+Benchmarking workload round=7 concurrency=2
+Benchmarking workload round=8 concurrency=2
+Benchmarking workload round=9 concurrency=2
+{
+  "run_dir": "data/results/rtx5090/calibration/workload-c2",
+  "rounds_completed": 10,
+  "requests": 1000,
+  "success_rate": 1.0,
+  "mean_latency_ms": 569.9072600584477,
+  "baseline_metrics": "data/results/rtx5090/calibration/workload-c2/baseline_metrics.json"
+}
+START concurrency=4
+Benchmarking workload round=0 concurrency=4
+Benchmarking workload round=1 concurrency=4
+Benchmarking workload round=2 concurrency=4
+Benchmarking workload round=3 concurrency=4
+Benchmarking workload round=4 concurrency=4
+Benchmarking workload round=5 concurrency=4
+Benchmarking workload round=6 concurrency=4
+Benchmarking workload round=7 concurrency=4
+Benchmarking workload round=8 concurrency=4
+Benchmarking workload round=9 concurrency=4
+{
+  "run_dir": "data/results/rtx5090/calibration/workload-c4",
+  "rounds_completed": 10,
+  "requests": 1000,
+  "success_rate": 1.0,
+  "mean_latency_ms": 631.1172121074051,
+  "baseline_metrics": "data/results/rtx5090/calibration/workload-c4/baseline_metrics.json"
+}
+START concurrency=8
+Benchmarking workload round=0 concurrency=8
+Benchmarking workload round=1 concurrency=8
+Benchmarking workload round=2 concurrency=8
+Benchmarking workload round=3 concurrency=8
+Benchmarking workload round=4 concurrency=8
+Benchmarking workload round=5 concurrency=8
+Benchmarking workload round=6 concurrency=8
+Benchmarking workload round=7 concurrency=8
+Benchmarking workload round=8 concurrency=8
+Benchmarking workload round=9 concurrency=8
+{
+  "run_dir": "data/results/rtx5090/calibration/workload-c8",
+  "rounds_completed": 10,
+  "requests": 1000,
+  "success_rate": 1.0,
+  "mean_latency_ms": 795.0224891714752,
+  "baseline_metrics": "data/results/rtx5090/calibration/workload-c8/baseline_metrics.json"
+}
+START concurrency=16
+Benchmarking workload round=0 concurrency=16
+Benchmarking workload round=1 concurrency=16
+Benchmarking workload round=2 concurrency=16
+Benchmarking workload round=3 concurrency=16
+Benchmarking workload round=4 concurrency=16
+Benchmarking workload round=5 concurrency=16
+Benchmarking workload round=6 concurrency=16
+Benchmarking workload round=7 concurrency=16
+Benchmarking workload round=8 concurrency=16
+Benchmarking workload round=9 concurrency=16
+{
+  "run_dir": "data/results/rtx5090/calibration/workload-c16",
+  "rounds_completed": 10,
+  "requests": 1000,
+  "success_rate": 1.0,
+  "mean_latency_ms": 1119.2043814193457,
+  "baseline_metrics": "data/results/rtx5090/calibration/workload-c16/baseline_metrics.json"
+}
