@@ -5,7 +5,7 @@
 [![DOI](https://img.shields.io/badge/DOI-pending-lightgrey)]()
 [![GitHub](https://img.shields.io/badge/GitHub-ufxa%2Ftee--llm--inference-black?logo=github)](https://github.com/ufxa/tee-llm-inference)
 
-## A TEE-Based Framework for Privacy-Preserving Large Language Model Deployment in Regulated Cloud Environments
+## A TEE-Based Framework for Large Language Models in Regulated Cloud Environments, with a Trace-Driven Projection over 1.2 Million Real Requests
 
 Prepared for submission to *IEEE Access* as a Research Article.
 
@@ -58,9 +58,6 @@ tee-llm-inference/
 ├── requirements.txt          # Reproduction dependencies
 └── REPRODUCIBILITY.md        # Scope, checks, and limitations
 ```
-
-`codeA100/` (remote GPU-server scripts) is excluded through `.gitignore` for
-security reasons.
 
 ## Reproducing the Paper
 
