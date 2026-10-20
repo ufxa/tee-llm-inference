@@ -43,7 +43,8 @@ independent attribution to a specific Vast instance.
 
 Root inspected:
 
-`/home/sort/Área de trabalho/Artigo 10 - TwinGuard/.worktrees/codex/a100-benchmark/artifacts/rtx5090`
+The original RTX 5090 artifact package retrieved from the Vast.ai instance
+(the curated subset is published under `data/raw/rtx5090/`).
 
 The root contains 633 files and is approximately 778 MB: 363 JSON files, 250
 compressed sample files, 13 CSV files, and 7 log files. The preferred result
@@ -83,9 +84,9 @@ remain separate in the paper.
 
 The supplied Vast.ai environment specification identifies Ubuntu 22.04 LTS,
 Linux kernel 5.15.0, CUDA 12.8.1, PyTorch 2.9.0 with CUDA 12.8, and vLLM
-0.11.1. The vLLM metadata contains the stale label
-`evaluation_type: experimental_a100_performance` despite the system label
-`RTX5090-vLLM`. The artifact set does not record the vLLM package version. The
+0.11.1. The vLLM metadata contains a stale `evaluation_type` label inherited from an
+earlier benchmark template; the system label is `RTX5090-vLLM`, and all runs
+were executed on the RTX 5090. The artifact set does not record the vLLM package version. The
 raw final-run package dump is still absent, so the 0.11.1 value is an
 environment specification rather than a version string emitted by the final
 run metadata. The manuscript now uses vLLM 0.11.1 consistently.
