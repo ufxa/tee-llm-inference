@@ -1,47 +1,49 @@
 # TwinGuard: Confidential AI Inference at Scale
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![IEEE Access](https://img.shields.io/badge/Target-IEEE%20Access-blue)](https://ieeeaccess.ieee.org)
+[![Target](https://img.shields.io/badge/Target-IEEE%20Access-blue)](https://ieeeaccess.ieee.org)
 [![DOI](https://img.shields.io/badge/DOI-pending-lightgrey)]()
 [![GitHub](https://img.shields.io/badge/GitHub-ufxa%2Ftee--llm--inference-black?logo=github)](https://github.com/ufxa/tee-llm-inference)
 
-**Confidential AI Inference at Scale: A TEE-Based Framework for Large Language Models in Regulated Cloud Environments, with a Trace-Driven Projection over 1.2 Million Real Requests**
+## A TEE-Based Framework for Privacy-Preserving Large Language Model Deployment in Regulated Cloud Environments
 
-> Prepared for submission to IEEE Access
-
----
+Prepared for submission to *IEEE Access* as a Research Article.
 
 ## Abstract
 
 Large language models are increasingly deployed in regulated sectors, yet
-existing cloud inference pipelines expose sensitive data to untrusted
-infrastructure operators. TwinGuard is a three-layer framework for confidential
-LLM inference at scale, coordinating an Attestation Agent, Inference Agent, and
-Audit Agent within hardware-isolated TEE boundaries (Intel TDX, AMD SEV-SNP,
-Intel SGX). We introduce the Confidential Inference Score (CIS), a novel
-composite metric quantifying the joint privacy, attestation freshness, overhead,
-and regulatory compliance posture of a confidential inference deployment.
+existing cloud-inference pipelines expose sensitive data to untrusted
+infrastructure operators. TwinGuard is a three-layer framework for
+confidential LLM inference at scale, coordinating an Attestation Agent,
+Inference Agent, and Audit Agent within hardware-isolated TEE boundaries
+(Intel TDX, AMD SEV-SNP, and Intel SGX). We introduce the Confidential
+Inference Score (CIS), a composite metric that combines privacy,
+attestation freshness, overhead, and technical-control coverage.
 
-**Key results:**
-- Physical benchmark (no TEE): 1.2M real requests (Llama-2-7B GPTQ, vLLM) on an NVIDIA RTX 5090, 0 failures, 1,131.52 ms mean latency, 14.12 req/s; per-request traces in `data/raw/rtx5090/`
-- Trace-driven TEE projection, overheads from measured literature ranges (Chrapek et al. 2025; Misono et al. 2024), 4,000 Monte Carlo draws:
-  - projected mean latency 1,201 ms (SGX), 1,231 ms (TDX), 1,242 ms (SEV-SNP)
-  - CIS 0.928 (SGX), 0.921 (TDX), 0.918 (SEV-SNP); TLS-only 0.288, plaintext 0.250
-  - ranking uncertain: SGX ranks first in 74% of draws
-- Attestation with freshness-aware caching at the measured rate: 99.33% cache hits, 0.66% of latency
-- Design-level technical-control coverage: 93.8% (7.5/8) vs. 25.0% (2/8) for TLS-only
+### Key results
 
-No SGX, TDX or SEV-SNP hardware was executed. All TEE values are projections
-from the measured traces; coverage values are technical mappings, not legal
-compliance certifications.
+- **Physical baseline:** 1.2 million real requests to Llama-2-7B GPTQ through
+  vLLM on an NVIDIA RTX 5090; 1,131.52 ms mean latency and 14.12 req/s.
+- **Trace-driven TEE projections:** 4,000 Monte Carlo draws yield projected
+  means of 1,201 ms (SGX), 1,231 ms (TDX), and 1,242 ms (SEV-SNP).
+- **CIS:** 0.928 (SGX), 0.921 (TDX), and 0.918 (SEV-SNP), versus 0.288 for the
+  TLS-only baseline.
+- **Attestation cache:** 99.33% measured cache-hit rate; attestation accounts
+  for 0.66% of projected latency.
+- **Technical-control coverage:** 93.8% (7.5/8 controls) for TwinGuard versus
+  25.0% (2/8) for TLS-only.
 
----
+> **Important:** no SGX, TDX, or SEV-SNP hardware was executed. All TEE
+> values are trace-driven projections calibrated from the measured baseline
+> and published overhead ranges; they are not physical TEE measurements or
+> legal compliance certifications.
 
 ## Repository Structure
 
-```
+```text
 tee-llm-inference/
 ├── README.md
+├── LICENSE
 ├── paper/
 │   ├── main.tex              # IEEE Access LaTeX source
 │   ├── references.bib        # Bibliography
@@ -51,21 +53,18 @@ tee-llm-inference/
 ├── data/
 │   ├── raw/rtx5090/          # Baseline traces and manifests
 │   └── results/              # Derived results (CSV/JSON)
-├── REPRODUCIBILITY.md        # Release scope, checks, and limitations
+├── scripts/
+│   └── build.sh              # Paper build helper
 ├── requirements.txt          # Reproduction dependencies
-└── LICENSE
+└── REPRODUCIBILITY.md        # Scope, checks, and limitations
 ```
 
-> **Note:** `codeA100/` (remote GPU server scripts) is excluded from
-> this repository via `.gitignore` for security reasons.
-
----
+`codeA100/` (remote GPU-server scripts) is excluded through `.gitignore` for
+security reasons.
 
 ## Reproducing the Paper
 
 ### Build the PDF
-
-Requires [tectonic](https://tectonic-typesetting.github.io):
 
 ```bash
 ./scripts/build.sh
@@ -73,31 +72,27 @@ Requires [tectonic](https://tectonic-typesetting.github.io):
 cd paper && tectonic main.tex
 ```
 
-### Reproduce the results and figures
+### Reproduce the projections and figures
 
 ```bash
-python src/evaluation/project_twinguard_trace.py      # trace-driven TEE projection
-python src/evaluation/cis_weight_sensitivity.py       # CIS weight sweep
+python src/evaluation/project_twinguard_trace.py --draws 4000 --seed 42
+python src/evaluation/cis_weight_sensitivity.py
 python src/evaluation/generate_figure4_latency.py
 python src/evaluation/generate_figure5_cis.py
 python src/evaluation/generate_figure6_scalability.py
 python src/evaluation/generate_figure7_uncertainty.py
 ```
 
-Inputs: the measured traces in `data/raw/rtx5090/` (10 rounds x 120,000
-requests, plus the calibration sweep). Outputs go to `data/results/` and
-`paper/output/raster/`. The earlier parameterized simulator is kept in
-`src/evaluation/legacy/` for history only and is not used by the paper.
+Inputs are the measured baseline traces in `data/raw/rtx5090/`; outputs are
+written to `data/results/` and `paper/output/raster/`. Run the integrity check
+before reproduction:
 
-Before submission, the repository will be tagged with the manuscript version.
-The tag will include the raw baseline traces, manifests, source hashes, derived
-results, and all scripts required to reproduce the trace-driven projection. No
-physical TEE measurements are claimed or included.
+```bash
+sha256sum -c data/SHA256SUMS
+```
 
-See `REPRODUCIBILITY.md` for the reproduction boundary and `data/README.md`
-for the data inventory and integrity checks.
-
----
+See `REPRODUCIBILITY.md` and `data/README.md` for the release boundary,
+environment, and validation procedure.
 
 ## How to Cite
 
@@ -113,41 +108,29 @@ for the data inventory and integrity checks.
 }
 ```
 
----
-
 ## Novel Metric: Confidential Inference Score (CIS)
 
-The CIS combines four sub-scores:
-
-```
-CIS(q) = 0.35 * PG(q)        # Privacy Guarantee (differential privacy strength)
-        + 0.25 * AF(q)        # Attestation Freshness (exponential decay)
-        + 0.25 * (1 - OP(q)) # Overhead Penalty (normalized latency overhead)
-        + 0.15 * CS(q)        # Compliance Score (GDPR/HIPAA coverage fraction)
+```text
+CIS(q) = 0.35 * PG(q)        # Privacy Guarantee
+       + 0.25 * AF(q)        # Attestation Freshness
+       + 0.25 * (1 - OP(q))  # Overhead Penalty
+       + 0.15 * CS(q)        # Technical-control coverage
 ```
 
-CIS in [0, 1]. The value 0.90 is an illustrative decision threshold within
-the proposed model, not a regulatory or deployment certification threshold.
+CIS is in [0, 1]. The 0.90 value is an illustrative decision threshold in the
+proposed model; it is not a regulatory or deployment-certification threshold.
 
----
+## Authors
 
-## Author
-
-**Allan Douglas Costa**, Ph.D.
-Professor, UFRA — Federal Rural University of the Amazon
-ICIBE Institute | LICA Laboratory | CCAD-IA
-ORCID: 0000-0002-7068-8889
-Email: allan.costa@ufra.edu.br
-
----
+- Carlos Lucas Vieira Barbosa — Federal University of Pará (UFPA)
+- José de Souza Junior — Federal University of Pará (UFPA)
+- Allan Douglas Costa, Ph.D. — Federal Rural University of the Amazon (UFRA)
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
-
----
+Distributed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
-Partially supported by FAPESPA, PRODEPA, SEC365 Cybersecurity Solutions,
-LICA, CCAD-IA, RNP, and INCT iAmazonia.
+Partially supported by FAPESPA, PRODEPA, SEC365 Cybersecurity Solutions, LICA,
+CCAD-IA, RNP, and INCT iAmazonia.
