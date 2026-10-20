@@ -1,0 +1,12 @@
+# Keep binary research artifacts out of textual diffs and normalize text files.
+*.json text eol=lf
+*.csv text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.tex text eol=lf
+*.jsonl.gz binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.pfb binary
+*.tfm binary

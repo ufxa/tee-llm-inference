@@ -15,5 +15,6 @@ config/server*.json
 __pycache__/
 *.pyc
 .DS_Store
-data/raw/
+.worktrees/
+.reposkillopt/
 paper/main.pdf

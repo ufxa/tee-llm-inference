@@ -1,0 +1,11 @@
+{
+  "concurrency": 16,
+  "evaluation_type": "measured_rtx5090_baseline",
+  "hardware_tee_execution": false,
+  "mean_latency_ms": 1131.5228759770189,
+  "rounds": 10,
+  "source_run": "data/results/rtx5090/full-1.2m/workload-rtx5090-1.2m-c16",
+  "std_latency_ms": 64.83396074235357,
+  "successful_requests": 1200000,
+  "total_requests": 1200000
+}

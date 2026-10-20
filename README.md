@@ -1,66 +1,70 @@
 # TwinGuard: Confidential AI Inference at Scale
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![IEEE TDSC](https://img.shields.io/badge/Target-IEEE%20TDSC-blue)](https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=8858)
+[![Target](https://img.shields.io/badge/Target-IEEE%20Access-blue)](https://ieeeaccess.ieee.org)
 [![DOI](https://img.shields.io/badge/DOI-pending-lightgrey)]()
 [![GitHub](https://img.shields.io/badge/GitHub-ufxa%2Ftee--llm--inference-black?logo=github)](https://github.com/ufxa/tee-llm-inference)
 
-**A TEE-Based Framework for Privacy-Preserving Large Language Model Deployment in Regulated Cloud Environments**
+## A TEE-Based Framework for Privacy-Preserving Large Language Model Deployment in Regulated Cloud Environments
 
-> Submitted to IEEE Transactions on Dependable and Secure Computing (TDSC, IF 7.3)
-
----
+Prepared for submission to *IEEE Access* as a Research Article.
 
 ## Abstract
 
 Large language models are increasingly deployed in regulated sectors, yet
-existing cloud inference pipelines expose sensitive data to untrusted
-infrastructure operators. TwinGuard is a three-layer framework for confidential
-LLM inference at scale, coordinating an Attestation Agent, Inference Agent, and
-Audit Agent within hardware-isolated TEE boundaries (Intel TDX, AMD SEV-SNP,
-Intel SGX). We introduce the Confidential Inference Score (CIS), a novel
-composite metric quantifying the joint privacy, attestation freshness, overhead,
-and regulatory compliance posture of a confidential inference deployment.
+existing cloud-inference pipelines expose sensitive data to untrusted
+infrastructure operators. TwinGuard is a three-layer framework for
+confidential LLM inference at scale, coordinating an Attestation Agent,
+Inference Agent, and Audit Agent within hardware-isolated TEE boundaries
+(Intel TDX, AMD SEV-SNP, and Intel SGX). We introduce the Confidential
+Inference Score (CIS), a composite metric that combines privacy,
+attestation freshness, overhead, and technical-control coverage.
 
-**Key results (simulated, 1.2M requests, seed=42):**
-- CIS: 0.921 ± 0.012 (TwinGuard-TDX) vs 0.431 (TLS-only baseline)
-- Latency overhead: 12.3% (TDX), 8.9% (SEV-SNP), 14.7% (SGX)
-- GDPR compliance coverage: 98.7%; HIPAA: 97.3%
-- Throughput: 847 req/s at 500 concurrent clients
+### Key results
 
----
+- **Physical baseline:** 1.2 million real requests to Llama-2-7B GPTQ through
+  vLLM on an NVIDIA RTX 5090; 1,131.52 ms mean latency and 14.12 req/s.
+- **Trace-driven TEE projections:** 4,000 Monte Carlo draws yield projected
+  means of 1,201 ms (SGX), 1,231 ms (TDX), and 1,242 ms (SEV-SNP).
+- **CIS:** 0.928 (SGX), 0.921 (TDX), and 0.918 (SEV-SNP), versus 0.288 for the
+  TLS-only baseline.
+- **Attestation cache:** 99.33% measured cache-hit rate; attestation accounts
+  for 0.66% of projected latency.
+- **Technical-control coverage:** 93.8% (7.5/8 controls) for TwinGuard versus
+  25.0% (2/8) for TLS-only.
+
+> **Important:** no SGX, TDX, or SEV-SNP hardware was executed. All TEE
+> values are trace-driven projections calibrated from the measured baseline
+> and published overhead ranges; they are not physical TEE measurements or
+> legal compliance certifications.
 
 ## Repository Structure
 
-```
+```text
 tee-llm-inference/
 ├── README.md
+├── LICENSE
 ├── paper/
-│   ├── main.tex              # LaTeX source (IEEEtran)
-│   └── references.bib        # Bibliography (50 entries)
+│   ├── main.tex              # IEEE Access LaTeX source
+│   ├── references.bib        # Bibliography
+│   └── imagens/              # Figures and author biographies
 ├── src/
-│   ├── agents/               # Agent implementations
-│   ├── metrics/              # CIS metric implementation
-│   └── evaluation/           # Evaluation scripts
+│   └── evaluation/           # Projection and figure-generation scripts
 ├── data/
-│   ├── processed/            # Processed workload traces
-│   └── results/              # Simulation results (CSV/JSON)
-├── notebooks/                # Jupyter notebooks for figures
+│   ├── raw/rtx5090/          # Baseline traces and manifests
+│   └── results/              # Derived results (CSV/JSON)
 ├── scripts/
-│   └── build.sh              # tectonic main.tex
-└── LICENSE
+│   └── build.sh              # Paper build helper
+├── requirements.txt          # Reproduction dependencies
+└── REPRODUCIBILITY.md        # Scope, checks, and limitations
 ```
 
-> **Note:** `codeA100/` (remote GPU server scripts) is excluded from
-> this repository via `.gitignore` for security reasons.
-
----
+`codeA100/` (remote GPU-server scripts) is excluded through `.gitignore` for
+security reasons.
 
 ## Reproducing the Paper
 
 ### Build the PDF
-
-Requires [tectonic](https://tectonic-typesetting.github.io):
 
 ```bash
 ./scripts/build.sh
@@ -68,65 +72,65 @@ Requires [tectonic](https://tectonic-typesetting.github.io):
 cd paper && tectonic main.tex
 ```
 
-### Run the Simulation
+### Reproduce the projections and figures
 
 ```bash
-cd src/evaluation
-python simulate_twinguard.py --rounds 10 --requests 120000 --seed 42
+python src/evaluation/project_twinguard_trace.py --draws 4000 --seed 42
+python src/evaluation/cis_weight_sensitivity.py
+python src/evaluation/generate_figure4_latency.py
+python src/evaluation/generate_figure5_cis.py
+python src/evaluation/generate_figure6_scalability.py
+python src/evaluation/generate_figure7_uncertainty.py
 ```
 
-Results are written to `data/results/`.
+Inputs are the measured baseline traces in `data/raw/rtx5090/`; outputs are
+written to `data/results/` and `paper/output/raster/`. Run the integrity check
+before reproduction:
 
----
+```bash
+sha256sum -c data/SHA256SUMS
+```
+
+See `REPRODUCIBILITY.md` and `data/README.md` for the release boundary,
+environment, and validation procedure.
 
 ## How to Cite
 
 ```bibtex
-@article{costa2026twinguard,
-  author  = {Costa, Allan Douglas},
-  title   = {Confidential {AI} Inference at Scale: A {TEE}-Based Framework
-             for Privacy-Preserving Large Language Model Deployment
-             in Regulated Cloud Environments},
-  journal = {IEEE Transactions on Dependable and Secure Computing},
+@article{barbosa2026twinguard,
+  author  = {Barbosa, Carlos Lucas Vieira and de Souza Junior, Jos\'{e} and Costa, Allan Douglas},
+  title   = {Confidential {AI} Inference at Scale: A {TEE}-Based Framework for
+             Large Language Models in Regulated Cloud Environments, with a
+             Trace-Driven Projection over 1.2 Million Real Requests},
+  journal = {IEEE Access},
   year    = {2026},
-  note    = {Submitted}
+  note    = {Under preparation}
 }
 ```
 
----
-
 ## Novel Metric: Confidential Inference Score (CIS)
 
-The CIS combines four sub-scores:
-
-```
-CIS(q) = 0.35 * PG(q)        # Privacy Guarantee (differential privacy strength)
-        + 0.25 * AF(q)        # Attestation Freshness (exponential decay)
-        + 0.25 * (1 - OP(q)) # Overhead Penalty (normalized latency overhead)
-        + 0.15 * CS(q)        # Compliance Score (GDPR/HIPAA coverage fraction)
+```text
+CIS(q) = 0.35 * PG(q)        # Privacy Guarantee
+       + 0.25 * AF(q)        # Attestation Freshness
+       + 0.25 * (1 - OP(q))  # Overhead Penalty
+       + 0.15 * CS(q)        # Technical-control coverage
 ```
 
-CIS in [0, 1]. Values >= 0.90 recommended for regulated-sector deployment.
+CIS is in [0, 1]. The 0.90 value is an illustrative decision threshold in the
+proposed model; it is not a regulatory or deployment-certification threshold.
 
----
+## Authors
 
-## Author
-
-**Allan Douglas Costa**, Ph.D.
-Professor, UFRA — Federal Rural University of the Amazon
-ICIBE Institute | LICA Laboratory | CCAD-IA
-ORCID: 0000-0002-7068-8889
-Email: allan.costa@ufra.edu.br
-
----
+- Carlos Lucas Vieira Barbosa — Federal University of Pará (UFPA)
+- José de Souza Junior — Federal University of Pará (UFPA)
+- Allan Douglas Costa, Ph.D. — Federal Rural University of the Amazon (UFRA)
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
-
----
+Distributed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
-Partially supported by FAPESPA, PRODEPA, SEC365 Cybersecurity Solutions,
-LICA, CCAD-IA, RNP, and INCT iAmazonia.
+Partially supported by FAPESPA, PRODEPA, SEC365 Cybersecurity Solutions, LICA,
+CCAD-IA, RNP, and INCT iAmazonia.

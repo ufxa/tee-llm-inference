@@ -1,8 +1,6 @@
-system,cis_mean,cis_std,overhead_pct
-Plaintext,0.1870,0.0340,0.0
-TLS-only,0.4310,0.0280,1.2
-SecureInfer,0.7830,0.0160,30.7
-ConfLLM,0.7140,0.0190,23.5
-TwinGuard-TDX,0.9206,0.0000,12.3
-TwinGuard-SEV-SNP,0.9292,0.0000,8.9
-TwinGuard-SGX,0.9146,0.0000,14.7
+system,cis,cis_ci95_lo,cis_ci95_hi,overhead_lo_pct,overhead_mid_pct,overhead_hi_pct
+Plaintext,0.2500,,,,0.0,
+TLS-only,0.2875,,,,0.0,
+TwinGuard-SEV-SNP,0.9184,0.9021,0.9346,2.96,9.81,16.66
+TwinGuard-TDX,0.9211,0.9150,0.9272,6.17,8.75,11.34
+TwinGuard-SGX,0.9276,0.9260,0.9292,5.46,6.13,6.81
